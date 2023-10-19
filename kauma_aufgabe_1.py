@@ -1,27 +1,24 @@
 import json
 import base64
-
+from hashlib import sha256
 
 def json_parser(input):
-    l = json.loads(input)
-    match l['action']:
+    data = json.loads(input)
+    match data['action']:
         case 'bytenigma':
-            return bytenigma(l)
+            input = list(base64.b64decode(data['input']))
+            rotors = data['rotors']
+            output = bytenigma(input, rotors)
+    return {"output": str(output)}
         
 def return_output(output):
     return json.dumps({"output": output})
 
+def run_tests():
+    pass
 
-def bytenigma(l):
-    input = base64.b64decode(l['input'])
-    input_l = list(input)
-    rotors = l['rotors']
-    out = pass_values(rotors,input_l)
-    out = ''.join(chr(i) for i in out)
-    out = base64.b64encode(out.encode())
-    return 0
 
-def pass_values(rotors,input):
+def bytenigma(input : list, rotors : list):
     output = list()
     for i in range(0,len(input)):        
         for index, rotor in enumerate(rotors):
@@ -31,8 +28,9 @@ def pass_values(rotors,input):
             input[i] = backwards_pass(rotor,input[i])
         rotors = rotation(rotors)
         output.append(input[i])
+    output = bytes(output)
+    output = base64.b64encode(output)
     return output
-
 
 def forwards_pass(rotor,input):
     return rotor[input]
@@ -47,8 +45,7 @@ def rotation(rotors):
         l[index] = rotor[1:] + [rotor[0]]
         if l[index][-1] ==0:
             continue
-        else:
-            break
+        break
     return l
 
 def bitwise_complement(input):
@@ -56,7 +53,11 @@ def bitwise_complement(input):
 
 
 
+if __name__ == "__main__":
 
-with open('test1.json') as f: input = f.read()
-out = json_parser(input)
-print(return_output(out))
+    with open('test1.json') as f: input = f.read()
+    out = json_parser(input)
+    print()
+    #r = input['rotors']
+    #out = bytenigma(list(b'\0'*2**20),rotors = r)
+    #print(return_output(out))

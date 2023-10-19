@@ -1,22 +1,49 @@
 import json
 import base64
 from hashlib import sha256
+from sys import stderr
+
+global reduction 
+
 
 def json_parser(input):
     data = json.loads(input)
     match data['action']:
         case 'bytenigma':
+            be_input_validation(data)
             input = list(base64.b64decode(data['input']))
             rotors = data['rotors']
+            global reduction
+            reduction = len(rotors[0])-1
             output = bytenigma(input, rotors)
     return json.dumps({"output": output})
 
+def be_input_validation(data):
+    try:
+        try:
+            list(base64.b64decode(data['input']))
+        except:
+            stderr("error: b64decoding input")
+        if len(data['rotors']) == 0:
+            stderr("error: json contains no rotors")
+    except:
+        stderr("error: bytenigma general input validation failed, trying to continue anyhow :)")
+
+#group of manually created tests to check if results are still providing the same output
 def run_tests():
-    #bytenigma
-    with open("test1.json") as file : data = file.read()
-    result = json.loads(data)['result']
-    assert json.loads(json_parser(data))['output'] == result
-    
+    #one try except suffices, because we are expecting all to pass anyways
+    try:
+        with open("test1.json") as file : data = file.read()
+        result = json.loads(data)['result']
+        assert json.loads(json_parser(data))['output'] == result 
+
+        with open("test2.json") as file : data = file.read() 
+        result = json.loads(data)['result'] 
+        assert json.loads(json_parser(data))['output'] == result 
+
+    except:
+        stderr("error running custom tests")
+
 
 #writes the result back to input, very nice
 def bytenigma(input : list, rotors : list):
@@ -50,7 +77,8 @@ def rotation(rotors):
     return l
 
 def bitwise_complement(input):
-    return 255-input
+    global reduction
+    return reduction-input
 
 
 

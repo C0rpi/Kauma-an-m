@@ -5,7 +5,6 @@ from sys import stderr
 
 global reduction 
 
-
 def json_parser(input):
     data = json.loads(input)
     match data['action']:
@@ -47,6 +46,7 @@ def run_tests():
 
 #writes the result back to input, very nice
 def bytenigma(input : list, rotors : list):
+
     for i in range(0,len(input)):
 
         for rotor in rotors:
@@ -58,7 +58,6 @@ def bytenigma(input : list, rotors : list):
         rotors = rotation(rotors)
 
     input = bytes(input)
-    input = str(base64.b64encode(input),'ascii')
     return input
 
 def forwards_pass(rotor,input):
@@ -82,9 +81,18 @@ def bitwise_complement(input):
 
 
 if __name__ == "__main__":
-    run_tests()
 
-    #with open('test1.json') as f: input = f.read()
+
+
+    #run_tests()
+
+    with open('test1.json') as f: input = json.loads(f.read())
+    global reduction
+    reduction = len(input['rotors'][0])-1
+    print(str(sha256(bytenigma(list(b'\0'*2**20), input['rotors'])).hexdigest()),'ascii')
+
+
+
     #out = json_parser(input)
     #print()
     #r = input['rotors']

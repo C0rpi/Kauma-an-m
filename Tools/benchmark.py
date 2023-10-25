@@ -3,7 +3,7 @@ import base64
 from hashlib import sha256
 from sys import stderr
 
-global reduction 
+global reduction
 
 def json_parser(input):
     data = json.loads(input)
@@ -46,6 +46,11 @@ def run_tests():
 
 #writes the result back to input, very nice
 def bytenigma(input : list, rotors : list):
+    try:
+        global reduction
+    except:
+        global reduction
+        reduction = 255
 
     for i in range(0,len(input)):
 
@@ -75,8 +80,11 @@ def rotation(rotors):
     return rotors
 
 def bitwise_complement(input):
-    global reduction
-    return reduction-input
+    try: 
+        global reduction
+        return reduction -input
+    except:
+        return 255-input
 
 
 

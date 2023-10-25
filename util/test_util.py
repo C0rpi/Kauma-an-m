@@ -15,4 +15,4 @@ def be_run_tests():
         assert json.loads(json_parser(data))['output'] == result 
 
     except:
-        stderr("error running custom tests")
+        stderr.write("error running custom tests")

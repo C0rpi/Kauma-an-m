@@ -3,7 +3,8 @@ from bytenigma.bytenigma import be_input_validation
 from bytenigma.bytenigma import bytenigma
 import base64
 
-def json_parser(input):
+def json_parser(json_path):
+    with open(json_path) as file: input = file.read()
     data = json.loads(input)
     match data['action']:
         case 'bytenigma':

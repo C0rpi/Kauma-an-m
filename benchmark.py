@@ -22,11 +22,11 @@ def be_input_validation(data):
         try:
             list(base64.b64decode(data['input']))
         except:
-            stderr("error: b64decoding input")
+            stderr.write("error: b64decoding input")
         if len(data['rotors']) == 0:
-            stderr("error: json contains no rotors")
+            stderr.write("error: json contains no rotors")
     except:
-        stderr("error: bytenigma general input validation failed, trying to continue anyhow :)")
+        stderr.write("error: bytenigma general input validation failed, trying to continue anyhow :)")
 
 #group of manually created tests to check if results are still providing the same output
 def run_tests():
@@ -41,7 +41,7 @@ def run_tests():
         assert json.loads(json_parser(data))['output'] == result 
 
     except:
-        stderr("error running custom tests")
+        stderr.write("error running custom tests")
 
 
 #writes the result back to input, very nice

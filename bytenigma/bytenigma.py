@@ -7,11 +7,11 @@ def be_input_validation(data):
         try:
             list(b64decode(data['input']))
         except:
-            stderr("error: b64decoding input")
+            stderr.write("error: b64decoding input")
         if len(data['rotors']) == 0:
-            stderr("error: json contains no rotors")
+            stderr.write("error: json contains no rotors")
     except:
-        stderr("error: bytenigma general input validation failed, trying to continue anyhow :)")
+        stderr.write("error: bytenigma general input validation failed, trying to continue anyhow :)")
 
 def forwards_pass(rotor,input):
     return rotor[input]

@@ -10,7 +10,7 @@ from base64 import b64decode
 #diagrams were generated seperately
 def show_bar():
     rotor = [i for i in range(0,256)]
-
+    
     #test 1 rotor
     out = b.bytenigma(list(b'\0'*2**20), [random.sample(rotor,256)] )
     out = list(out)
@@ -67,6 +67,12 @@ def show_bar():
     plot.hist(out,255)
     plot.show()
 
-
+    #10rotors but everyone is identical and random 
+    r = random.sample(rotor,256)
+    out = b.bytenigma(list(b'\0'*2**20), [r for i in range(0,10)])
+    out = list(out)
+    plot.hist(out,255)
+    plot.show() 
+    print()
 
 show_bar()

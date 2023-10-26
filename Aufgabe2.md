@@ -9,6 +9,11 @@ Unter der Annahme, dass alle Bytes in einem Rotor gesetzt sind nur Rotoren schwa
 *Beispiel mit dem ersten Rotor linear*
 
 Wie eindeutig sichtbar ist, haben wir entweder einen starken bias mit ungleicher Verteilung oder eine Verteilung bei der nicht alle Werte belegt sind. Dies schränkt die Sicherheit deutlich ein
+
+ebenfalls dürfen rotoren nicht identisch sein.
+![10 identical rotors](tests/empirical_analysis_results/10_identical_rotors.png?raw=true "10 identical rotors")
+*Beispiel mit 10 identischen Rotoren*
+Dies schränkt die Sicherheit ebenfalls erheblich ein.
 ## Ist die BYTENIGMA krypto-grafisch stark, wenn randomisierte Rotoren gewaehlt werden?
 
 Da es sich bei der Bytenigma um eine Konstruktion, die beinahe identisch mit der Enigma ist, handelt, sind auch die gleichen Schwachstellen der Enigma vorhanden. Das heißt, sobald Teile des Plaintexts bekannt sind, lässt sich die Rotorstellung zumindest teilweise (teilweise da nicht selbst ausprobiert und unsicher in welchem Umfang) zurückrechnen. 

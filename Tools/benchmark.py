@@ -65,20 +65,25 @@ def bytenigma(input : list, rotors : list):
     input = bytes(input)
     return input
 
+#self explainatory
 def forwards_pass(rotor,input):
     return rotor[input]
 
+#self explainatory
 def backwards_pass(rotor,input):
     return rotor.index(input) #certainly not the fastest but surely the easiest solution
 
+#self explainatory
 def rotation(rotors):
     for rotor in rotors:
         rotor.append(rotor.pop(0))
-        if rotor[-1] ==0:
+        if rotor[-1] == 0:
             continue
         break
     return rotors
 
+#self explainatory
+#try catch needed when json_parse is skipped, e.g. in empirical_analysis
 def bitwise_complement(input):
     try: 
         global reduction

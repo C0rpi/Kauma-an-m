@@ -4,6 +4,8 @@ from bytenigma.bytenigma import bytenigma
 import base64
 from sys import stderr
 
+
+#central point which decides what action to perform based on the input
 def json_parser(json_path):
 
 
@@ -15,6 +17,7 @@ def json_parser(json_path):
         stderr.write("Error opening the file by relativ and absolute path, aborting")
         raise 
 
+    #decider
     match data['action']:
         case 'bytenigma':
             be_input_validation(data) 

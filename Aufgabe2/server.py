@@ -38,8 +38,6 @@ class Server:
                                 self.step = 2
                         case 2:
                             input = input + (conn.recv(2))
-                            print(input)
-                            print(len(input))
                             if len(input) == 2:
                                 self.feld = int.from_bytes(input,'little')
                                 if self.feld == 0:

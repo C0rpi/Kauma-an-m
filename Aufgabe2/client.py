@@ -11,10 +11,6 @@ inp = """
 }"""
 
 c = "fJxLd1A3aY8YVk2Ge0akWQ=="
-print(len(base64.b64decode(c)))
-print(base64.b64decode(c))
-print(len(bytes(c,'ascii')))
-print(bytes(c,'ascii'))
 qbytes = [int.to_bytes(i,16) for i in range(0xff) ]
 q = b''
 for i in qbytes:

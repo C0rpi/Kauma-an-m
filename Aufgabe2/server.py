@@ -5,15 +5,18 @@ import socket
 from sys import stderr
 class Server:
     feld : bytes
-    q : list
+    q : list 
     c : str
     host : str  = "127.0.0.1" #TODO hostname auslesen
     port : int = 18733
+
+    step : int = 1
 
     def __init__(self, host, port) -> None:
         self.host = host
         self.port = port
         self.run()
+        self.step = 1
 
 
     def run(self):
@@ -24,13 +27,38 @@ class Server:
             conn, addr = s.accept()
             with conn:
                 print(f"Connected by {addr}")
+                input = b''
                 while True:
-                    data = conn.recv(1024)
-                    data = data.decode('ascii')
-                    out = self.recv_input(data)
-                    if not data:
-                        break
-                    conn.sendall(bytes(out))
+                    match self.step:
+                        case 1:
+                            input = input + (conn.recv(24)) #24 because 16 bytes b64 encoded and padded = 24 bytes transfered
+                            if len(input) == 24:
+                                self.c = input
+                                input = b''
+                                self.step = 2
+                        case 2:
+                            input = input + (conn.recv(2))
+                            print(input)
+                            print(len(input))
+                            if len(input) == 2:
+                                self.feld = int.from_bytes(input,'little')
+                                if self.feld == 0:
+                                    conn.sendall(b'0')
+                                    break
+                                input = b''
+                                self.q = [[] for i in range(self.feld)]
+                                self.step = 3
+                        case 3:
+                            input = input + (conn.recv(16*self.feld))
+                            if len(input) == 16*self.feld:
+                                for i in range(self.feld):
+                                    self.q[i] = input[i*16:(i+1)*16]
+                                input = b''
+                                ret = self.check_pad()
+                                conn.sendall(ret)
+                                self.step = 2
+                                self.q = []
+
             
 
 
@@ -48,24 +76,23 @@ class Server:
             else:
                 self.q = [self.q.encode()]
             return self.check_pad()
-        
     
 
     def check_pad(self):
         b = []
         unpadder = PKCS7(128).unpadder()
-        for i in range(0, int.from_bytes(self.feld,'little')):#TODO i>n(q)
+        for i in range(0, self.feld):#TODO i>n(q)
             if i>len(self.q)-1:
                 break
+            x = bxor(self.q[i],self.c) 
             try: 
-                x = bxor(self.q[i],self.c)
                 unpadder.update(x)
                 unpadder.finalize()
                 unpadder = PKCS7(128).unpadder()
                 b.append(b"1")
+                print(x)
 
-            except ValueError as e:
-                stderr.write(e)
+            except ValueError:
                 b.append(b"0")
                 continue
         return(b"".join(b))

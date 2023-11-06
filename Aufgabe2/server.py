@@ -1,8 +1,5 @@
 from cryptography.hazmat.primitives.padding import PKCS7
-import base64
-import json
 import socket
-from sys import stderr
 class Server:
     feld : bytes
     q : list 
@@ -17,63 +14,54 @@ class Server:
         self.port = port
         self.run()
         self.step = 1
-
+        self.running = True
 
     def run(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #no functionality, useful for debugging if the server crashes
             s.bind((self.host, self.port))
-            s.listen()
-            conn, addr = s.accept()
-            with conn:
-                print(f"Connected by {addr}")
+            while True:
+                s.listen()
+                print("waiting for connection")
+                conn, addr = s.accept()
+                self.running = True
+                with conn:
+                    print(f"Connected by {addr}")
+                    input = b''
+                    while self.running:
+                        match self.step:
+                            case 1:
+                                input = input + (conn.recv(16))
+                                if len(input) == 16:
+                                    self.c = input
+                                    input = b''
+                                    self.step = 2
+                            case 2:
+                                input = input + (conn.recv(2))
+                                if len(input) == 2:
+                                    self.feld = int.from_bytes(input,'little')
+                                    if self.feld == 0:
+                                        conn.sendall(b'ENDEGELAENDE')#breaks connection if 0 q blocks announced
+                                        self.running = False
+                                        break
+                                    input = b''
+                                    self.q = [[] for i in range(self.feld)]
+                                    self.step = 3
+                            case 3:
+                                input = input + (conn.recv(16*self.feld))
+                                print(f"input: {len(input)} 16*self.feld: {16*self.feld}")
+                                if len(input) == 16*self.feld:
+                                    for i in range(self.feld):
+                                        self.q[i] = input[i*16:(i+1)*16]
+                                    input = b''
+                                    ret = self.check_pad()
+                                    conn.sendall(ret)
+                                    self.step = 2
+                                    self.q = []
+                self.step = 1
+                self.running = False
                 input = b''
-                while True:
-                    match self.step:
-                        case 1:
-                            input = input + (conn.recv(24)) #24 because 16 bytes b64 encoded and padded = 24 bytes transfered
-                            if len(input) == 24:
-                                self.c = input
-                                input = b''
-                                self.step = 2
-                        case 2:
-                            input = input + (conn.recv(2))
-                            if len(input) == 2:
-                                self.feld = int.from_bytes(input,'little')
-                                if self.feld == 0:
-                                    conn.sendall(b'0')
-                                    break
-                                input = b''
-                                self.q = [[] for i in range(self.feld)]
-                                self.step = 3
-                        case 3:
-                            input = input + (conn.recv(16*self.feld))
-                            if len(input) == 16*self.feld:
-                                for i in range(self.feld):
-                                    self.q[i] = input[i*16:(i+1)*16]
-                                input = b''
-                                ret = self.check_pad()
-                                conn.sendall(ret)
-                                self.step = 2
-                                self.q = []
 
-            
-
-
-    #TODO exception handling
-    def recv_input(self, input : str):
-        input = json.loads(input)
-        if "ciphertext" in input:
-            self.c = base64.b64decode(input['ciphertext'])
-        if "feld" in input:
-            self.feld = input['feld'].encode()
-        if "q" in input:
-            self.q = input['q']
-            if type(self.q) == list:
-                self.q = [i.encode() for i in self.q ]
-            else:
-                self.q = [self.q.encode()]
-            return self.check_pad()
     
 
     def check_pad(self):
@@ -87,17 +75,19 @@ class Server:
                 unpadder.update(x)
                 unpadder.finalize()
                 unpadder = PKCS7(128).unpadder()
-                b.append(b"1")
+                b.append(b"\1")
+                print(self.q[i])
+                print(self.c)
                 print(x)
 
             except ValueError:
-                b.append(b"0")
+                b.append(b"\0")
                 continue
         return(b"".join(b))
     
 
                 
-def bxor(ba,bb):
+def bxor(ba : bytes, bb : bytes):
     return bytes(x ^ y for (x, y) in zip(ba, bb)) 
 
 

@@ -1,6 +1,7 @@
 import socket
 import base64
 from cryptography.hazmat.primitives.padding import PKCS7
+import json
 
 class Client:
     host :str  
@@ -17,7 +18,7 @@ class Client:
         self.iv = iv
         self.q = b''
 
-    def run(self) -> bytes:
+    def run(self):
         self.feld = int.to_bytes(0xff,2,'little')
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -54,7 +55,7 @@ class Client:
                         else:
                             self.dc = self.dc[:j-1] + bxor(add,pad) + self.dc[j:]
                             break
-            ret = str(base64.b64encode(bxor(self.iv,self.dc)),'ascii')
+            ret = bxor(self.iv,self.dc)
             return(ret)
 
 
@@ -70,3 +71,15 @@ def verify_padding(input):
         return True        
     except ValueError:
         return False
+
+with open("Aufgabe2/ct1.json") as f: input = json.loads(f.read())
+for i in input['pairs']:
+    iv = i['iv']
+    ct_l = i['ct']
+    res = b''
+
+    for ct in ct_l:
+        client = Client("141.72.5.194",18732, bytes.fromhex(ct), bytes.fromhex(iv))
+        res = res + client.run()
+        iv = ct
+    print(f"\n\n\nresult: {res.decode('utf-8')}") 

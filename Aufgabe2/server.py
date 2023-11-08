@@ -4,7 +4,7 @@ class Server:
     feld : bytes
     q : list 
     c : str
-    host : str  = "127.0.0.1" #TODO hostname auslesen
+    host : str  = "127.0.0.1"
     port : int = 18733
 
     step : int = 1
@@ -29,6 +29,15 @@ class Server:
                     print(f"Connected by {addr}")
                     input = b''
                     while self.running:
+                        if self.is_socket_closed(conn):
+                            self.step = 1
+                            input = b''    
+                            self.c = b''
+                            self.q = b''
+                            self.feld = 0
+                            self.running = False
+                            conn.close()
+                            break
                         match self.step:
                             case 1:
                                 input = input + (conn.recv(16))
@@ -58,11 +67,23 @@ class Server:
                                     conn.sendall(ret)
                                     self.step = 2
                                     self.q = []
-                self.step = 1
-                self.running = False
-                input = b''
+    #hello stackoverflow
+    #checks if client connection is still alive
+    #reads the values from input buffer without removing them from the buffer
+    def is_socket_closed(self, conn: socket.socket) -> bool:
+        try:
+            data = conn.recv(16, socket.MSG_DONTWAIT | socket.MSG_PEEK)
+            if len(data) == 0:
+                return True
+        except BlockingIOError:
+            return False
+        except ConnectionResetError:
+            return True
+        except Exception as e:
+            print(str(e))
+        return False
 
-    
+
 
     def check_pad(self):
         b = []

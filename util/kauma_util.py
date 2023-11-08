@@ -1,6 +1,6 @@
 import json
-from bytenigma.bytenigma import be_input_validation
-from bytenigma.bytenigma import bytenigma
+from Aufgabe1.bytenigma.bytenigma import be_input_validation
+from Aufgabe1.bytenigma.bytenigma import bytenigma
 from Aufgabe2.client import Client
 import base64
 from sys import stderr
@@ -8,7 +8,6 @@ from sys import stderr
 
 #central point which decides what action to perform based on the input
 def json_parser(json_path):
-
 
     try:
         with open(json_path) as file: input = file.read()
@@ -26,6 +25,7 @@ def json_parser(json_path):
             rotors = data['rotors']
             output = bytenigma(input, rotors, len(rotors[0])-1)
             return json.dumps({"output": output})
+        
         case 'padding-oracle-attack':
             #no more input validation (currently)
             hostname = data['hostname']

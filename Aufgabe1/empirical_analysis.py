@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plot
 from base64 import b64decode
 import Tools.benchmark as b
-import json 
-from hashlib import sha256
 import random
 from base64 import b64decode
 

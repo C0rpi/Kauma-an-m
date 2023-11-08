@@ -29,6 +29,7 @@ class Server:
                     print(f"Connected by {addr}")
                     input = b''
                     while self.running:
+
                         if self.is_socket_closed(conn):
                             self.step = 1
                             input = b''    
@@ -38,6 +39,7 @@ class Server:
                             self.running = False
                             conn.close()
                             break
+                        #follow the protocol:
                         match self.step:
                             case 1:
                                 input = input + (conn.recv(16))
@@ -64,12 +66,14 @@ class Server:
                                         self.q[i] = input[i*16:(i+1)*16]
                                     input = b''
                                     ret = self.check_pad()
+
+                                    #return response, jumpt to step 2 and wait for next inputs
                                     conn.sendall(ret)
                                     self.step = 2
                                     self.q = []
     #hello stackoverflow
     #checks if client connection is still alive
-    #reads the values from input buffer without removing them from the buffer
+    #reads the bytes from input buffer without removing them from the buffer
     def is_socket_closed(self, conn: socket.socket) -> bool:
         try:
             data = conn.recv(16, socket.MSG_DONTWAIT | socket.MSG_PEEK)
@@ -84,7 +88,6 @@ class Server:
         return False
 
 
-
     def check_pad(self):
         b = []
         unpadder = PKCS7(128).unpadder()
@@ -97,9 +100,6 @@ class Server:
                 unpadder.finalize()
                 unpadder = PKCS7(128).unpadder()
                 b.append(b"\1")
-                print(self.q[i])
-                print(self.c)
-                print(x)
 
             except ValueError:
                 b.append(b"\0")

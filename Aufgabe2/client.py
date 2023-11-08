@@ -17,7 +17,7 @@ class Client:
         self.iv = iv
         self.q = b''
 
-    def run(self) -> bytes:
+    def run(self) -> str:
         self.feld = int.to_bytes(256,2,'little')
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -25,14 +25,16 @@ class Client:
 
             s.sendall(self.c)
             for j in range(16,0,-1):
-                #set padding values, length
+
+                #set padding values, length, generate qbytes and send the bytes to the server
                 pad = int.to_bytes(16-j+1)
                 pad_count = 16-j+1
                 qbytes = self.generate_bytes(j,pad,pad_count) #i love this 
                 s.sendall(self.feld)
                 s.sendall(self.q)   
                 data = s.recv(256)  
-                #find the correct padding
+
+                #find the correct padding in the server response
                 for i,v in enumerate(data):
                     if v == 1:
                         #set the byte value the server found to be acceptable padding
@@ -49,19 +51,15 @@ class Client:
                         self.dc = self.dc[:j-1] + bxor(add,pad) + self.dc[j:]
                         break
             ret = str(base64.b64encode(bxor(self.iv,self.dc)),'ascii')
-            print(f"check: {base64.b64decode(ret)}")
             return(ret)
         
     #generates the bytes that will be send to the server and return the 256*16byte values as a list
-    def generate_bytes(self,j,pad,pad_count):
+    def generate_bytes(self,j,pad,pad_count) -> list:
         self.q = b''
         qbytes = [int.to_bytes(i,j) + bxor(self.dc,b'\0'*j + pad*(pad_count))[j:] for i in range(256)]
         for i in qbytes:
             self.q = self.q + i
         return qbytes
 
-def bxor(ba : bytes,bb : bytes):
+def bxor(ba : bytes,bb : bytes) -> bytes:
     return bytes(x ^ y for (x, y) in zip(ba, bb))     
-
-c = Client("localhost",18732,base64.b64decode("RW1lcnNvbiBCcmFkeSACbw=="),base64.b64decode("AAAAAAAAAAAAAAAAAAAAAA=="))
-print(c.run())

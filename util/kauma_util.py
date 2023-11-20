@@ -23,7 +23,7 @@ def json_parser(json_path):
             be_input_validation(data) 
             input = list(base64.b64decode(data['input']))
             rotors = data['rotors']
-            output = bytenigma(input, rotors, len(rotors[0])-1)
+            output = str(base64.b64encode(bytenigma(input, rotors, len(rotors[0])-1)))
             return json.dumps({"output": output})
         
         case 'padding-oracle-attack':
@@ -33,7 +33,7 @@ def json_parser(json_path):
             iv = base64.b64decode(data['iv'])
             ct = base64.b64decode(data['ciphertext'])
             client = Client(hostname,port,ct,iv)
-            output = client.run()
+            output = str(base64.b64encode(client.run()),'ascii')
             print(output)
             return json.dumps({"plaintext": output})
 

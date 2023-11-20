@@ -1,6 +1,5 @@
 from sys import stderr
 from base64 import b64decode
-from base64 import b64encode
 
 
 #short input validation
@@ -50,7 +49,5 @@ def bytenigma(input : list, rotors : list, reduction):
             input[i] = backwards_pass(rotor,input[i])
         rotors = rotation(rotors)
 
-    input = bytes(input)
-    input = str(b64encode(input),'ascii')
-    return input
+    return bytes(input)
 

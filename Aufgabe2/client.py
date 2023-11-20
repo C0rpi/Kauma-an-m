@@ -9,6 +9,7 @@ class Client:
     q : bytes
     iv : bytes
     dc = b'\0'*16
+    s : socket
 
     def __init__(self, host, port, c, iv) -> None:
         self.host = host
@@ -19,39 +20,38 @@ class Client:
 
     def run(self) -> str:
         self.feld = int.to_bytes(256,2,'little')
-
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((self.host, self.port)) #create_connection ist besser #create once and PRAY
-
-            s.sendall(self.c)
+        print(self.host)
+        with socket.create_connection((self.host,self.port)) as self.s:
+            self.s.sendall(self.c)
             for j in range(16,0,-1):
 
                 #set padding values, length, generate qbytes and send the bytes to the server
                 pad = int.to_bytes(16-j+1)
                 pad_count = 16-j+1
-                qbytes = self.generate_bytes(j,pad,pad_count) #i love this 
-                s.sendall(self.feld)
-                s.sendall(self.q)   
-                data = s.recv(256)  
+                qbytes = self.generate_bytes(j,pad,pad_count)
+                self.s.sendall(self.feld + self.q)
+                data = self.s.recv(256)  
 
                 #find the correct padding in the server response
                 for i,v in enumerate(data):
                     if v == 1:
                         #set the byte value the server found to be acceptable padding
-                        add = int.to_bytes((qbytes[i][j-1]))
+                        add = int.to_bytes((qbytes[i][j-1]))        
+
                         #if first byte, do cross check
                         if j == 16:
-                            verifier = qbytes[i][:j-2]+ int.to_bytes(qbytes[i][j-1] ^ 0xff) + add + qbytes[i][j:]
-                            s.sendall(b'\1\0')
-                            s.send(verifier)
-                            b = s.recv(1)
-                            #if not valid: continue with next iteration, dont set dc
-                            if not b == b'\1':
-                                continue                        
+                            print("here")
+                            chance = data.find(1)
+                            print(chance)
+                            if not chance == -1: 
+                                print(add)
+                                add = self.verify_first_bytes(chance, qbytes,add,i)
+                                print(add)
                         self.dc = self.dc[:j-1] + bxor(add,pad) + self.dc[j:]
                         break
-            ret = str(base64.b64encode(bxor(self.iv,self.dc)),'ascii')
-            return(ret)
+            ret = bxor(self.iv,self.dc)
+            print(f"ret: {ret}")
+            return ret 
         
     #generates the bytes that will be send to the server and return the 256*16byte values as a list
     def generate_bytes(self,j,pad,pad_count) -> list:
@@ -60,6 +60,22 @@ class Client:
         for i in qbytes:
             self.q = self.q + i
         return qbytes
+    
+    def verify_first_bytes(self, chance : int, qbytes : list, add : list, i : int, j = 16):
+        try:
+            verifier = qbytes[i][:j-2]+ int.to_bytes(qbytes[i][j-1] ^ 0xff) + add + qbytes[i][j:]
+            self.s.sendall(b'\1\0' + verifier)
+            b = self.s.recv(1)
+            print(b)
+            if not b == b'\1':
+                return int.to_bytes((qbytes[chance][j-1])) 
+            return add
+        except ValueError:
+            print(f"add: {add}")
+            return add
 
 def bxor(ba : bytes,bb : bytes) -> bytes:
     return bytes(x ^ y for (x, y) in zip(ba, bb))     
+
+c = Client("localhost",17832,base64.b64decode("RW1lcnNvbiBCcmFkeSACbw=="),base64.b64decode("AAAAAAAAAAAAAAAAAAAAAA=="))
+print(c.run())

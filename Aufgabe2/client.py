@@ -37,7 +37,7 @@ class Client:
                 for i,v in enumerate(data):
                     if v == 1:
                         #set the byte value the server found to be acceptable padding
-                        add = int.to_bytes((qbytes[i][j-1]))        
+                        add = int.to_bytes((qbytes[i][j-1]),16,'big')        
 
                         #if first byte, do cross check
                         if j == 16:
@@ -52,19 +52,19 @@ class Client:
     #generates the bytes that will be send to the server and return the 256*16byte values as a list
     def generate_bytes(self,j,pad,pad_count) -> list:
         self.q = b''
-        qbytes = [int.to_bytes(i,j) + bxor(self.dc,b'\0'*j + pad*(pad_count))[j:] for i in range(256)]
+        qbytes = [int.to_bytes(i,j,'big') + bxor(self.dc,b'\0'*j + pad*(pad_count))[j:] for i in range(256)]
         for i in qbytes:
             self.q = self.q + i
         return qbytes
     
     def verify_first_bytes(self, chance : int, qbytes : list, add : list, i : int, j = 16):
         try:
-            verifier = qbytes[i][:j-2]+ int.to_bytes(qbytes[i][j-1] ^ 0xff) + add + qbytes[i][j:]
+            verifier = qbytes[i][:j-2]+ int.to_bytes(qbytes[i][j-1] ^ 0xff,1,'big') + add + qbytes[i][j:]
             self.s.sendall(b'\1\0' + verifier)
             b = self.s.recv(1)
             print(b)
             if not b == b'\1':
-                return int.to_bytes((qbytes[chance][j-1])) 
+                return int.to_bytes((qbytes[chance][j-1]),1,'big') 
             return add
         except ValueError:
             print(f"add: {add}")

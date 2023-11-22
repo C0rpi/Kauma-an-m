@@ -26,7 +26,8 @@ class Client:
             for j in range(16,0,-1):
 
                 #set padding values, length, generate qbytes and send the bytes to the server
-                pad = int.to_bytes(16-j+1)
+                
+                pad = (16-j+1).to_bytes(1,'big') #python3.10 is deprecated why use it??
                 pad_count = 16-j+1
                 qbytes = self.generate_bytes(j,pad,pad_count)
                 self.s.sendall(self.feld + self.q)
@@ -76,6 +77,3 @@ class Client:
 
 def bxor(ba : bytes,bb : bytes) -> bytes:
     return bytes(x ^ y for (x, y) in zip(ba, bb))     
-
-c = Client("localhost",17832,base64.b64decode("RW1lcnNvbiBCcmFkeSACbw=="),base64.b64decode("AAAAAAAAAAAAAAAAAAAAAA=="))
-print(c.run())

@@ -1,4 +1,4 @@
-from poly import Poly
+from .poly import Poly
 from cryptography.hazmat.primitives.ciphers.algorithms import AES128
 from cryptography.hazmat.primitives.ciphers import Cipher, modes
 import math

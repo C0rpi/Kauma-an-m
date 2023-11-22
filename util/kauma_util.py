@@ -64,15 +64,15 @@ def json_parser(json_path):
             at_out = base64.b64encode(at.poly2block()).decode('ascii')
             y0_out = base64.b64encode(y0.poly2block()).decode('ascii')
             h_out = base64.b64encode(h.poly2block()).decode('ascii')
-            print(f"cts: {ct_out}\nat: {at_out}\ny0:{y0_out}\nh: {h_out}")
-
             output = json.dumps({"ciphertext": ct_out, "auth_tag" : at_out, "Y0": y0_out,"H":h_out})
-            #return output
-
+            return output
             ##testing
-            with open("Aufgabe3/nist_vectors/nist_5.out.json") as f: validator = json.loads(f.read())
-            print(f"output:    {output}\nvalidator: {validator}\n")
+            with open("Aufgabe3/nist_vectors/nist_4.out.json") as f: validator = json.loads(f.read())
             res = json.loads(output)
             for k,v in res.items():
-                print(f"k:{k}\n")
-                assert v == validator[k]
+                try:
+                    assert v == validator[k]
+                except:
+                    stderr.write(f"failed for: {k}")
+                    stderr.write(f"res: {res[k]}\nval: {validator[k]}")
+            return output

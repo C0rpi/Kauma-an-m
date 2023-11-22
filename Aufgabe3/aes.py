@@ -3,6 +3,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES128
 from cryptography.hazmat.primitives.ciphers import Cipher, modes
 import math
 import copy
+import base64
 class AES128GCM:
     
     key : Poly
@@ -21,7 +22,6 @@ class AES128GCM:
 
     def encrypt(self):
         cts,y0 = self._gen_ct()
-        print(f"cts:  {cts}")
         at = self._ghash(copy.deepcopy(cts))
         return cts,at,y0,self.h
     
@@ -34,6 +34,9 @@ class AES128GCM:
         self._update_y()
         y0 = self.y    
         self._gen_atxor(cipher)
+        #if no plaintexts are present, return no ciphertexts!
+        if self.pt == [] or self.pt[0].p == []:
+            return [],y0
         for p in self.pt:
             self._update_y()
             bce = Poly(cipher.update(self.y.poly2block()))
@@ -45,21 +48,14 @@ class AES128GCM:
     def _ghash(self, cts : list):
         acc = Poly([])        
         l = Poly(sum([i.orig_length for i in self.ad]).to_bytes(8,'big') + sum([i.orig_length for i in cts]).to_bytes(8,'big'))
-        print(sum([i.orig_length for i in self.ad]).to_bytes(8,'big'))
-        print(sum([i.orig_length for i in cts]).to_bytes(8,'big'))
-        print(self.h.poly2block().hex())
-        print(l.poly2block().hex())
         cts.append(l)
 
         for i in reversed(self.ad):
             cts.insert(0,i)
 
         for ct in cts:
-            print(f"B:   {ct.poly2block().hex()}")
             acc ^= ct
-            print(f"T+B: {acc.poly2block().hex()}")
             acc *= self.h
-            print(f"T*h: {acc.poly2block().hex()}\n")
         return acc ^ self.atxor
     
     def _update_y(self) -> None:
@@ -73,7 +69,5 @@ class AES128GCM:
         self.atxor = Poly(cipher.update(self.y.poly2block()))
 
     def _block_xor(self,ptb,bce):
-        print(f"ptb: {ptb}\nbce: {bce}")
         res = ptb ^ bce
-        print(f"res: {res}")
         return res

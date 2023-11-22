@@ -106,7 +106,7 @@ class Poly:
                 a.p.remove(i)
         for i in a.p:
             if not i in self.p:
-                if i > self.p[-1]:
+                if i > self.blocksize():
                     break
                 out.append(i)
         return Poly(sorted(out))

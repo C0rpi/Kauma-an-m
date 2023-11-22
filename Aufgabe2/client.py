@@ -41,17 +41,12 @@ class Client:
 
                         #if first byte, do cross check
                         if j == 16:
-                            print("here")
                             chance = data.find(1)
-                            print(chance)
                             if not chance == -1: 
-                                print(add)
                                 add = self.verify_first_bytes(chance, qbytes,add,i)
-                                print(add)
                         self.dc = self.dc[:j-1] + bxor(add,pad) + self.dc[j:]
                         break
             ret = bxor(self.iv,self.dc)
-            print(f"ret: {ret}")
             return ret 
         
     #generates the bytes that will be send to the server and return the 256*16byte values as a list

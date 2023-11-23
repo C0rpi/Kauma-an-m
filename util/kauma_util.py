@@ -24,7 +24,7 @@ def json_parser(json_path):
             be_input_validation(data) 
             input = list(base64.b64decode(data['input']))
             rotors = data['rotors']
-            output = str(base64.b64encode(bytenigma(input, rotors, len(rotors[0])-1)))
+            output = base64.b64encode(bytenigma(input, rotors, len(rotors[0])-1)).decode('ascii')
             return json.dumps({"output": output})        
         case 'padding-oracle-attack':
             #no more input validation (currently)
@@ -33,7 +33,7 @@ def json_parser(json_path):
             iv = base64.b64decode(data['iv'])
             ct = base64.b64decode(data['ciphertext'])
             client = Client(hostname,port,ct,iv)
-            output = str(base64.b64encode(client.run()),'ascii')
+            output = base64.b64encode(client.run()).decode('ascii')
             print(output)
             return json.dumps({"plaintext": output})
         case 'gcm-encrypt':
@@ -41,8 +41,6 @@ def json_parser(json_path):
             nonce =  Poly(base64.b64decode(data['nonce']))
             associated_data =  base64.b64decode(data['associated_data'])
             ptb = (base64.b64decode(data['plaintext']))
-
-
 
             print(len(ptb))
 

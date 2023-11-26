@@ -1,61 +1,96 @@
-#TODO fix sqm, manual verification for values if possible LOL
-
+#TODO MOAR GENERATORS
 
 from poly import Poly
 import copy
 
 class CZPoly(Poly):
 
-    coefficients : list #list(list(Poly))
+    coef : list #list(list(Poly))
 
     #gets a list of lists as input, converts those to list of polys
-    def __init__(self,coefficients : list) -> None:
-        self.coefficients = []
-        for i in coefficients:
-            self.coefficients.append(Poly(i))
+    def __init__(self,coef : list) -> None:
+        if coef and type(coef[0]) == Poly:
+            self.coef = coef
+            return
+        self.coef = []
+        for i in coef:
+            self.coef.append(Poly(i))
             
     def __add__(self,a):
-        for i,v in enumerate(self.coefficients):
-            self.coefficients[i] == self.coefficients[i] ^ a.coefficients[i]
-        return 
-    
+        return CZPoly(
+            [v^self.coef[i] for i,v in enumerate(a.coef)]+ [(self.coef[len(a.coef):])] 
+            if len(self.coef) >= len(a.coef) 
+            else  
+            [v^a.coef[i] for i,v in enumerate(self.coef)] + [(a.coef[len(self.coef)])])
+          
     def __mul__(self,a):
-        out = CZPoly([[] for i in range(len(self.coefficients) + len(a.coefficients)-1)])
-        for i1,v1 in enumerate(self.coefficients):
-            for i2,v2 in enumerate(a.coefficients):
+        out = CZPoly([[] for i in range(len(self.coef) + len(a.coef)-1)])
+        for i1,v1 in enumerate(self.coef):
+            for i2,v2 in enumerate(a.coef):
                 inserter = v2*v1    
-                out.coefficients[i1+i2] ^= inserter
+                out.coef[i1+i2] ^= inserter
         return out
 
     def sqm(self,exp : int): #no reduce needed because the multiply reduces for every step anyhow, not quite the most performant way, but works none the less
         p = copy.deepcopy(self)
-        exp = Poly(exp).p
-        binlist = [1 if i in exp else 0 for i in range(exp[-1]+1)]
+        binlist = Poly(exp).binlist()[-2::-1]#automatically cuts the first one, bc that inherently represented in the algorithm
         for i in binlist:
             p *=p
             if i == 1:
                 p*=self
         return p
-            
-
-    def gcd(self,p):
-        pass
     
-    def __mod__(self,red):
-        return self._reduce(red)
+    def binlist(self) -> list:
+        return [i.binlist() for i in self.coef]
+    def binlist_8bit(self) -> list:        
+        return [i.binlist_8bit() for i in self.coef]
+
+
+    #def gcd(self,p):
+    #    pass
+    
+    #def __mod__(self,red):
+    #    return self._reduce(red)
+
+    def __divmod__(self, d):
+        a = copy.deepcopy(self)
+        out = list()
+        i = 1
+        while len(out)< len(d.coef):
+            index = a.coef[len(a.coef)-i].p[-1]-d.coef[-1].p[-1]
+            val,rem = a.coef[len(a.coef)-i].__divmod__(d.coef[-1])
+            out.insert(0,val)
+            for j,v in enumerate(reversed(d.coef[i:])):
+                print(Poly(v._lshift(index)))
+                a.coef[len(a.coef)-len(d.coef)-j+1]^=(Poly(v._lshift(index)))
+            i += 1
+        return out
 
     def __pow__(self, exp):
         return self.sqm(exp)
     
-    def powmod(self,mod):
-        p = copy.deepcopy(self)
-        binlist = [1 if i in p else 0 for i in range(p[-1])]
-        for i in binlist:
-            for i,v in enumerate(p.coefficients):
-                p.coefficients[i] == v.mulred(v,mod)
-                if i == 1:
-                    p.coefficients = v.mulred(self.coefficients,mod)
-        return p
+    """def pow(self, exp, mod : Poly):
+        cpoly = copy.deepcopy(self)
+        #basically sqm but with the functions supporting mod instead
+        binlist = Poly(exp).binlist()[-2::-1]
+        b = bytes(Poly(exp).poly2block())
+        out = list()
+        for i,p in enumerate(cpoly.coef):
+            for b in binlist:
+                p = p.mulred(p,mod.coef[i])
+                print()
+                if b == 1:
+                    p = p.mulred(cpoly.coef[i],mod.coef[i])
+                    print()
+
+            out.append(p)
+        return out
+        """
     
+    
+    
+    def _monic(self):
+        pass
+
     def __repr__(self):
-        return "".join([str(i) for i in self.coefficients])
+        return "".join([str(i)+"," for i in self.coef])

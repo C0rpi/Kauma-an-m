@@ -2,73 +2,28 @@ from poly import Poly
 import base64
 from CZPoly import CZPoly
 
-i = 3
-i = Poly(i)
-print(i)
-print(i)
-
-
-
-l = [
+base= [
 "BAAAAAAAAAAAAAAAAAAAAA==",
 "AgAAAAAAAAAAAAAAAAAAAA==",
 "AcAAAAAAAAAAAAAAAAAAAA=="
 ]
-b = [
+exponent = 0xf4240
+modulo = [
 "JGAAAAAAAAAAAAAAAAAAAA==",
 "AAgAAAAAAAAAAAAAAAAAAA==",
 "EUAAAAAAAAAAAAAAAAAAAA=="
 ]
-result = [
-"IGAAAAAAAAAAAAAAAAAAAA==",
-"AggAAAAAAAAAAAAAAAAAAA==",
-"EIAAAAAAAAAAAAAAAAAAAA=="
-]
-p1 = []
-for i in l:
-    p1.append(Poly(base64.b64decode(i)))
-for p in p1:
-    print(p)
-print("\n")
-p1 = []
-for i in b:
-    p1.append(Poly(base64.b64decode(i)))
-for p in p1:
-    print(p)
-print("\n")
-p1 = []
-    
-for i in result:
-    p1.append(Poly(base64.b64decode(i)))
-for p in p1:
-    print(p)
-print("\n")
+a = Poly([9,8,7])
+b = Poly([9,8,6])
+c = (a*b)
+print(divmod(c,a))
 
 
-l = [
-"BAAAAAAAAAAAAAAAAAAAAA==",
-"AgAAAAAAAAAAAAAAAAAAAA==",
-"AcAAAAAAAAAAAAAAAAAAAA=="
-],
-exponent= 1000000,
-b = [
-"JGAAAAAAAAAAAAAAAAAAAA==",
-"AAgAAAAAAAAAAAAAAAAAAA==",
-"EUAAAAAAAAAAAAAAAAAAAA=="
-]
-base = [
-"BAAAAAAAAAAAAAAAAAAAAA==",
-"AgAAAAAAAAAAAAAAAAAAAA==",
-"AcAAAAAAAAAAAAAAAAAAAA=="
-]
-exponent = 3
+a = CZPoly([[2,3],[3],[2]])
+b = CZPoly([[1],[1]])
+#print(a.__divmod__(b))
 
-
-p1 = []
-for i in base:
-    p1.append((base64.b64decode(i)))
-for p in p1:
-    print(p)
-p1 = CZPoly(p1)
-print(p1**exponent)
-print()
+c = CZPoly([[7, 10, 14, 15],[8, 11, 15, 16, 17],[8, 9, 10, 11, 13, 16, 18, 19],[9, 13, 15, 19, 20, 21],[10, 11, 12, 14, 15, 17, 18]])
+base = CZPoly([base64.b64decode(i) for i in base])
+mod = CZPoly([base64.b64decode(i) for i in modulo])
+print(c.__divmod__(base))

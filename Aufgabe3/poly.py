@@ -1,5 +1,6 @@
 from functools import reduce
 from math import ceil
+import copy
 
 
 #Polyclass
@@ -23,8 +24,10 @@ class Poly:
             else:
                 self.orig_length = 8
                 
-        elif type(inp) == int:
-            self.p = Poly(inp.to_bytes(1,'big'))._gen_form_int()
+        elif type(inp) == int:    
+            bitlength = ceil(len((bin(inp).removeprefix('0b')))/8)*8
+            self.p = [(bitlength-1)-i for i in range(bitlength) if (inp >> (bitlength-1-i) & 1) == 1][::-1]
+            self.orig_length = bitlength
         else:
             raise ValueError()
         
@@ -38,12 +41,6 @@ class Poly:
             else:
                 self.p.append(i)
                 return
-    def _gen_form_int(self):
-        res = []
-        l = [1 if i in self.p else 0 for i in range(self.blocksize()) ]
-        res = [i for i,v in enumerate(reversed(l)) if v ==1]
-        return res
-    
     
     def poly2block(self) -> bytes:
         if self.p == []:
@@ -58,8 +55,11 @@ class Poly:
             res.append(b)
         l = bytes(res)
         return res
+    def binlist(self) -> list:
+        return [1 if i in self.p else 0 for i in range(self.p[-1]+1)]
+    def binlist_8bit(self) -> list:
+        return [1 if i in self.p else 0 for i in range(self.blocksize())]
     
-
     def blocksize(self):
         if not self.p == []:
             if not self.p[-1] % 8 == 0:
@@ -67,11 +67,18 @@ class Poly:
             else:
                 return self.p[-1] + 1
         return 0
-    def _reduce(self,red = None) -> None:
-        if not red:
-            red = Poly([0,1,2,7,128]) #fix            
-        a = self
-        while red.p[-1] <= a.p[-1]:
+    
+    def _aes_reduce(self) -> None:
+        red = Poly([0,1,2,7,128]) #fix            
+        a = copy.deepcopy(self)
+        while not a.p == [] and red.p[-1] <= a.p[-1]:
+            red_poly = Poly(red._lshift(a.p[-1]-red.p[-1]))
+            a ^= red_poly
+        return a
+    
+    def _reduce(self,red) -> None:         
+        a = copy.deepcopy(self)
+        while not a.p == [] and red.orig_length <= a.p[-1]:
             red_poly = Poly(red._lshift(a.p[-1]-red.p[-1]))
             a ^= red_poly
         return a
@@ -82,7 +89,6 @@ class Poly:
     def _lshift(self, index):
         return [i+index for i in self.p]
 
-    
     def __mul__(self,a):
         if a.p == [] or self.p == []:
             return Poly([])
@@ -90,9 +96,9 @@ class Poly:
         for i in a.p:
             l.append(Poly(self._lshift(i)))
         mul = reduce(lambda a,b: b^a, l)
-        res = mul._reduce()
+        res = mul._aes_reduce()
         return res
-    
+
     def mulred(self,a,red):        
         if a.p == [] or self.p == []:
             return Poly([])
@@ -101,6 +107,7 @@ class Poly:
             l.append(Poly(self._lshift(i)))
         mul = reduce(lambda a,b: b^a, l)
         res = mul._reduce(red)
+        return res
     
     def __add__(self,a):
         if len(a.p) ==0 or len(self.p) == 0:
@@ -110,17 +117,36 @@ class Poly:
         else:
             return Poly(self.p + a.p)
 
-    def __truediv__(self, red):
-        a = self
+    def pow(self,a,mod = None):
+        return self.sqm(a,mod)
+
+    def sqm(self,exp,red = None): #no reduce needed because the multiply reduces for every step anyhow, not quite the most performant way, but works none the less
+        if not red:
+            red = Poly([0,1,2,7,128]) #fix
+        p = copy.deepcopy(self)
+        binlist = Poly(exp).binlist()[-2::-1]#automatically cuts the first one, bc that inherently represented in the algorithm
+        for i in binlist:
+            p *=p%red
+            if i == 1:
+                p*=self%red
+        return p
+    def __divmod__(self,exp):
+        mul =  exp.pow(2**128-2)
+        return self * mul
+
+    def __mod__(self,red):
+        a = copy.deepcopy(self)
         out = Poly([])
-        while red.p[-1] <= a.p[-1]:
-            red_poly = Poly(red._lshift(a.p[-1]-red.p[-1]))
+        while not a.p ==[] and red.p[-1] <= a.p[-1]:
+            index = a.p[-1]-red.p[-1]
+            red_poly = Poly(red._lshift(index))
             a ^= red_poly
-            out.p.append(red_poly.p[-1])
-        return out
+            out.p.append(index)
+        return a
     
-    def __xor__(self,a) -> list:
+    def __xor__(self,inp) -> list:
         #if one list is empty return other list
+        a = copy.deepcopy(inp)
         if self.p == [] or a.p == []:
             return Poly(self.p+a.p)
         out = list()
@@ -131,8 +157,6 @@ class Poly:
                 a.p.remove(i)
         for i in a.p:
             if not i in self.p:
-                if i > self.blocksize():
-                    break
                 out.append(i)
         return Poly(sorted(out))
     

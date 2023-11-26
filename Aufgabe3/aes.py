@@ -35,12 +35,15 @@ class AES128GCM:
         y0 = self.y    
         self._gen_atxor(cipher)
         #if no plaintexts are present, return no ciphertexts!
-        if self.pt == [] or self.pt[0].p == []:
+        if self.pt == [] or (self.pt[0].p == [] and self.pt[0].orig_length == 8):
             return [],y0
         for p in self.pt:
             self._update_y()
             bce = Poly(cipher.update(self.y.poly2block()))
-            cts.append(self._block_xor(p,bce))
+            out = self._block_xor(p,bce)
+            if out.blocksize() > p.orig_length:
+                out = Poly([i for i in out.p if i<p.orig_length])
+            cts.append(out)
             cts[-1].orig_length = p.orig_length #help
         cipher.finalize()
         return cts,y0

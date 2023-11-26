@@ -130,8 +130,8 @@ class Poly:
             if i == 1:
                 p*=self%red
         return p
-    def __divmod__(self,exp):
-        mul =  exp.pow(2**128-2)
+    def __truediv__(self,exp):
+        mul =  exp.pow(2**128-2) #this is soooooo slow
         return self * mul
 
     def __mod__(self,red):

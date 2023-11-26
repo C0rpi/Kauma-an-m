@@ -58,7 +58,7 @@ class CZPoly(Poly):
         i = 1
         while len(out)< len(d.coef):
             index = a.coef[len(a.coef)-i].p[-1]-d.coef[-1].p[-1]
-            val,rem = a.coef[len(a.coef)-i].__divmod__(d.coef[-1])
+            val = a.coef[len(a.coef)-i]/(d.coef[-1])
             out.insert(0,val)
             for j,v in enumerate(reversed(d.coef[i:])):
                 print(Poly(v._lshift(index)))

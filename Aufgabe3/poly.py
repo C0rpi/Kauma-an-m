@@ -10,18 +10,21 @@ class Poly:
     orig_length : int #size of original input if e.g. the input has 0-bytes at the end
 
     def __init__(self, inp) -> None:
-        #input can be either list or bytes
+        #input can be either list or bytes or int
         if type(inp) == bytes:
             val = int.from_bytes(inp)
             self.p = [i for i in range(len(inp)*8) if (val >> (len(inp)*8-1-i) & 1) == 1]
             self.orig_length = len(inp)*8
+            
         elif type(inp) == list:
-
             self.p = inp 
             if not self.p == []:
                 self.orig_length = self.blocksize()
             else:
                 self.orig_length = 8
+                
+        elif type(inp) == int:
+            self.p = Poly(inp.to_bytes(1,'big'))._gen_form_int()
         else:
             raise ValueError()
         
@@ -35,9 +38,12 @@ class Poly:
             else:
                 self.p.append(i)
                 return
-
-
-        self.p = self.p[:-1] + [(self.p[-1]+1)]
+    def _gen_form_int(self):
+        res = []
+        l = [1 if i in self.p else 0 for i in range(self.blocksize()) ]
+        res = [i for i,v in enumerate(reversed(l)) if v ==1]
+        return res
+    
     
     def poly2block(self) -> bytes:
         if self.p == []:
@@ -61,9 +67,10 @@ class Poly:
             else:
                 return self.p[-1] + 1
         return 0
-    def _reduce(self) -> None:
+    def _reduce(self,red = None) -> None:
+        if not red:
+            red = Poly([0,1,2,7,128]) #fix            
         a = self
-        red = Poly([0,1,2,7,128]) #fix
         while red.p[-1] <= a.p[-1]:
             red_poly = Poly(red._lshift(a.p[-1]-red.p[-1]))
             a ^= red_poly
@@ -85,6 +92,16 @@ class Poly:
         mul = reduce(lambda a,b: b^a, l)
         res = mul._reduce()
         return res
+    
+    def mulred(self,a,red):        
+        if a.p == [] or self.p == []:
+            return Poly([])
+        l = list()
+        for i in a.p:
+            l.append(Poly(self._lshift(i)))
+        mul = reduce(lambda a,b: b^a, l)
+        res = mul._reduce(red)
+    
     def __add__(self,a):
         if len(a.p) ==0 or len(self.p) == 0:
             return Poly(self.p + a.p)
@@ -93,11 +110,19 @@ class Poly:
         else:
             return Poly(self.p + a.p)
 
+    def __truediv__(self, red):
+        a = self
+        out = Poly([])
+        while red.p[-1] <= a.p[-1]:
+            red_poly = Poly(red._lshift(a.p[-1]-red.p[-1]))
+            a ^= red_poly
+            out.p.append(red_poly.p[-1])
+        return out
+    
     def __xor__(self,a) -> list:
         #if one list is empty return other list
         if self.p == [] or a.p == []:
             return Poly(self.p+a.p)
-        
         out = list()
         for i in self.p:
             if not i in a.p:
@@ -110,6 +135,7 @@ class Poly:
                     break
                 out.append(i)
         return Poly(sorted(out))
+    
     def __repr__(self) -> str:
         return str(self.p)
     

@@ -131,6 +131,8 @@ class Poly:
                 p*=self%red
         return p
     def __truediv__(self,exp):
+        if self == exp:
+            return Poly([0])
         mul =  exp.pow(2**128-2) #this is soooooo slow
         return self * mul
 

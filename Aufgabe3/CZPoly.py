@@ -31,13 +31,20 @@ class CZPoly(Poly):
                 out.coef[i1+i2] ^= inserter
         return out
 
-    def sqm(self,exp : int): #no reduce needed because the multiply reduces for every step anyhow, not quite the most performant way, but works none the less
+    def sqm(self,exp : int, red  = None): #no reduce needed because the multiply reduces for every step anyhow, not quite the most performant way, but works none the less
         p = copy.deepcopy(self)
         binlist = Poly(exp).binlist()[-2::-1]#automatically cuts the first one, bc that inherently represented in the algorithm
-        for i in binlist:
-            p *=p
-            if i == 1:
-                p*=self
+        if not red:
+            for i in binlist:
+                p *=p
+                if i == 1:
+                    p*=self
+        else:
+            for i in binlist:
+                p =(p*p)%red
+                if i == 1:
+                    p*=self
+                    p %= red
         return p
     
     def binlist(self) -> list:
@@ -46,51 +53,60 @@ class CZPoly(Poly):
         return [i.binlist_8bit() for i in self.coef]
 
 
-    #def gcd(self,p):
-    #    pass
+    def gcd(self,p):
+        c, rem = divmod(self,p)
+        for i in rem.coef:
+            if not i.p == []:
+                return rem._to_monic()
+        return c._to_monic()
     
-    #def __mod__(self,red):
-    #    return self._reduce(red)
-
     def __divmod__(self, d):
         a = copy.deepcopy(self)
         out = list()
         i = 1
-        while len(out)< len(d.coef):
-            index = a.coef[len(a.coef)-i].p[-1]-d.coef[-1].p[-1]
-            val = a.coef[len(a.coef)-i]/(d.coef[-1])
-            out.insert(0,val)
-            for j,v in enumerate(d.coef[len(d.coef)-1::-1]):
-                print(Poly(v._lshift(index)))
-                a.coef[len(a.coef)-len(d.coef)-j]^=(Poly(v._lshift(index)))
+        res_degree = 1
+        
+        if len(self.coef)<=len(d.coef): return None, self
+        
+        while len(out)<=len(d.coef):
+            res_degree = len(a.coef)-(i-1) - len(d.coef)
+            res_div = a.coef[len(a.coef)-i]/(d.coef[-1])
+            a.coef[len(a.coef)-i]^=res_div*d.coef[-1]
+            out.insert(0,res_div)
+            for j,v in enumerate(d.coef[len(d.coef)-2::-1]):
+                index = res_degree + (len(d.coef)-2)-j
+                if index >= 0:
+                    a.coef[index]^=v*res_div
             i += 1
-        return out
+        rem = list()
+        for i,v in enumerate(a.coef[::-1]):
+            if not v.p == []:
+                rem.append(v)
+        return CZPoly(out), CZPoly(rem[::-1])
 
+    def __mod__(self,mod):
+        a,b = divmod(self,mod)
+        return b
+    
     def __pow__(self, exp):
         return self.sqm(exp)
     
-    """def pow(self, exp, mod : Poly):
-        cpoly = copy.deepcopy(self)
-        #basically sqm but with the functions supporting mod instead
-        binlist = Poly(exp).binlist()[-2::-1]
-        b = bytes(Poly(exp).poly2block())
-        out = list()
-        for i,p in enumerate(cpoly.coef):
-            for b in binlist:
-                p = p.mulred(p,mod.coef[i])
-                print()
-                if b == 1:
-                    p = p.mulred(cpoly.coef[i],mod.coef[i])
-                    print()
-
-            out.append(p)
-        return out
-        """
-    
-    
-    
-    def _monic(self):
+    def powmod(self, exp : int, mod):
+        return self.sqm(exp, mod)
+        
+        
+        
         pass
+        
+    
+    
+    
+    def _to_monic(self):
+        red = self.coef[-1]
+        out = list()
+        for i in self.coef:
+            out.append(i / red)
+        return CZPoly(out) 
 
     def __repr__(self):
         return "".join([str(i)+"," for i in self.coef])

@@ -20,7 +20,6 @@ class Client:
 
     def run(self) -> str:
         self.feld = int.to_bytes(256,2,'little')
-        print(self.host)
         with socket.create_connection((self.host,self.port)) as self.s:
             self.s.sendall(self.c)
             for j in range(16,0,-1):
@@ -62,7 +61,6 @@ class Client:
             verifier = qbytes[i][:j-2]+ int.to_bytes(qbytes[i][j-1] ^ 0xff,1,'big') + add + qbytes[i][j:]
             self.s.sendall(b'\1\0' + verifier)
             b = self.s.recv(1)
-            print(b)
             if not b == b'\1':
                 return int.to_bytes((qbytes[chance][j-1]),1,'big') 
             return add

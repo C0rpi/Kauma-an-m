@@ -1,6 +1,8 @@
 from poly import Poly
 from CZPoly import CZPoly
 import random
+import copy
+from math import ceil
 class Cantor:
     
     nonce : Poly
@@ -13,11 +15,24 @@ class Cantor:
         self.ad = ad
         self.at = at
 
-    def rand_poly(self):
-        return Poly(random.getrandbits(128))
+    def rand_poly(self,ind):
+        out = list()
+        for i in ind:
+            out.append(Poly(random.getrandbits(128)))
+        return CZPoly(out)
 
 
     def run(self):
-        h = self.rand_poly()
-        
-        pass
+        ctl = [[] for i in j for j in self.ct]
+        for i in self.ct[:3]:
+            for j in i:
+                ctl
+        len = ceil(len(self.ct[0]/16))#is always every ct the same length
+        f = Poly(self.at[0]+self.at[1])
+        p = copy.deepcopy(len-1)
+        q = 2**128
+        condition = True
+        while condition:
+            h = self.rand_poly(len(f.coef)-1)
+            g = h.mod((q-1)/3+Poly(1),f)
+            poly_q = g.gcd(p)

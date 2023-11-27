@@ -1,6 +1,6 @@
 #TODO MOAR GENERATORS
 
-from poly import Poly
+from .poly import Poly
 import copy
 
 class CZPoly(Poly):
@@ -18,15 +18,24 @@ class CZPoly(Poly):
     
     def binlist(self) -> list:
         return [i.binlist() for i in self.coef]
+    
     def binlist_8bit(self) -> list:        
         return [i.binlist_8bit() for i in self.coef]
-        
+    
+    def poly2block(self) -> bytes:
+        out = list()
+        for i in self.coef:
+            out.append(i.poly2block() + b'\0'*(16-i.blocksize()//8))
+        return out
+    
     def __add__(self,a):
-        return CZPoly(
-            [v^self.coef[i] for i,v in enumerate(a.coef)]+ [(self.coef[len(a.coef):])] 
-            if len(self.coef) >= len(a.coef) 
-            else  
-            [v^a.coef[i] for i,v in enumerate(self.coef)] + [(a.coef[len(self.coef)])])
+        if len(self.coef) > len(a.coef):
+            out = [v^self.coef[i] for i,v in enumerate(a.coef)]+ [(self.coef[len(a.coef):])] 
+        elif len(self.coef) < len(a.coef):
+            out = [v^a.coef[i] for i,v in enumerate(self.coef)] + [(a.coef[len(self.coef)])]
+        else:
+            out = [v^a.coef[i] for i,v in enumerate(self.coef)]
+        return CZPoly(out)
           
     def __mul__(self,a):
         out = CZPoly([[] for i in range(len(self.coef) + len(a.coef)-1)])
@@ -77,9 +86,7 @@ class CZPoly(Poly):
 
             for j,v in enumerate(d.coef[len(d.coef)-2::-1]):
                 index = res_degree + (len(d.coef)-2)-j
-                print(index)
                 rem_poly = v*res_div
-                print(rem_poly)
                 if index >= 0:
                     a.coef[index]^=rem_poly
                 else:

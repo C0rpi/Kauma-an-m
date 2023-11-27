@@ -46,24 +46,26 @@ class Poly:
         if self.p == []:
             return b'\0'*16
         outlist = [1 if i in self.p else 0 for i in range(128) ]
-        res = bytearray()
-        for j in range(8,self.blocksize()+1,8):
+        res = list()
+        for j in range(8,129,8):
             b = 0
             for i,v in enumerate(outlist[j-8:j]):
                 if v ==1:
                     b = b + (1 << ((7-i) % 8))
             res.append(b)
-        l = bytes(res)
+        res = bytes(res)
         return res
     def binlist(self) -> list:
         return [1 if i in self.p else 0 for i in range(self.p[-1]+1)]
     def binlist_8bit(self) -> list:
         return [1 if i in self.p else 0 for i in range(self.blocksize())]
+    def binlist_128bit(self) -> list:
+        return [1 if i in self.p else 0 for i in range(128)]
     
     def blocksize(self):
         if not self.p == []:
-            if not self.p[-1] % 8 == 0:
-                return ceil((self.p[-1]/8))*8
+            if not self.p[-1] % 7 == 0:
+                return ceil(((self.p[-1]+1)/8))*8
             else:
                 return self.p[-1] + 1
         return 0

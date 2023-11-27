@@ -5,6 +5,7 @@ from Aufgabe2.client import Client
 import base64
 from Aufgabe3.aes import AES128GCM
 from Aufgabe3.poly import Poly
+from Aufgabe3.CZPoly import CZPoly
 from sys import stderr
 
 #central point which decides what action to perform based on the input
@@ -34,8 +35,8 @@ def json_parser(json_path):
             ct = base64.b64decode(data['ciphertext'])
             client = Client(hostname,port,ct,iv)
             output = str(base64.b64encode(client.run()),'ascii')
-            print(output)
             return json.dumps({"plaintext": output})
+        
         case 'gcm-encrypt':
             key =  Poly(base64.b64decode(data['key']))
             nonce =  Poly(base64.b64decode(data['nonce']))
@@ -44,7 +45,6 @@ def json_parser(json_path):
 
 
 
-            print(len(ptb))
 
             adt = list()
             if not adt == "" or not associated_data == []:
@@ -60,7 +60,13 @@ def json_parser(json_path):
                 pt.append(Poly(adt))
             cipher = AES128GCM(key,nonce,adt,pt)            
             cts,at,y0,h = cipher.encrypt()
-            ct_out = base64.b64encode(b''.join([i.poly2block() for i in cts])).decode('ascii')
+            ct_out = bytearray(b''.join([i.poly2block() for i in cts]))
+            for i in ct_out[::-1]:
+                if i == 0:
+                    ct_out = ct_out[:-1] 
+                else: 
+                    break
+            ct_out = base64.b64encode(ct_out).decode('ascii')
             at_out = base64.b64encode(at.poly2block()).decode('ascii')
             y0_out = base64.b64encode(y0.poly2block()).decode('ascii')
             h_out = base64.b64encode(h.poly2block()).decode('ascii')
@@ -76,3 +82,75 @@ def json_parser(json_path):
                     stderr.write(f"failed for: {k}")
                     stderr.write(f"res: {res[k]}\nval: {validator[k]}")
             return output
+        
+        case 'gcm-block2poly':
+            b = data['block']
+            output = Poly(b)
+            return json.dumps({"exponents": output})
+        case 'gcm-poly2block':
+            e = data['exponents']
+            output = base64.b64encode(Poly(e).poly2block())
+            return json.dumps({"block": output})
+        case 'gcm-clmul':
+            a = Poly(base64.b64decode(data['a']))
+            b = Poly(base64.b64decode(data['b']))
+            output = base64.b64encode((a*b).poly2block())
+            return json.dumps({"a_times_b": output})
+        
+        case 'gcm-poly-add':
+            a = CZPoly([base64.b64decode(i) for i in data['a']])
+            b = CZPoly([base64.b64decode(i) for i in data['b']])
+            out = (a+b).poly2block()
+            output = list()
+            for i in out:
+                output.append(str(base64.b64encode(i),'ascii'))
+            return str(json.dumps({"result": output}))
+        case 'gcm-poly-mul':
+            a = CZPoly([base64.b64decode(i) for i in data['a']])
+            b = CZPoly([base64.b64decode(i) for i in data['b']])
+            out = (a*b).poly2block()
+            output = list()
+            for i in out:
+                output.append(str(base64.b64encode(i),'ascii'))
+            return json.dumps({"result": output})
+        case 'gcm-poly-gcd':
+            a = CZPoly([base64.b64decode(i) for i in data['a']])
+            b = CZPoly([base64.b64decode(i) for i in data['b']])
+            out = (a.gcd(b)).poly2block()
+            output = list()
+            for i in out:
+                output.append(str(base64.b64encode(i),'ascii'))
+            return json.dumps({"result": output})
+        case 'gcm-poly-div':
+            a = CZPoly([base64.b64decode(i) for i in data['a']])
+            b = CZPoly([base64.b64decode(i) for i in data['b']])
+            out = (a/b).poly2block()
+            output = list()
+            for i in out:
+                output.append(str(base64.b64encode(i),'ascii'))
+            return json.dumps({"result": output})
+        case 'gcm-poly-mod':
+            a = CZPoly([base64.b64decode(i) for i in data['a']])
+            b = CZPoly([base64.b64decode(i) for i in data['b']])
+            out = (a%b).poly2block()
+            output = list()
+            for i in out:
+                output.append(str(base64.b64encode(i),'ascii'))
+            return json.dumps({"result": output})
+        case 'gcm-poly-pow':
+            base = CZPoly([base64.b64decode(i) for i in data['base']])
+            exp = data['exponent']
+            out = (base**exp).poly2block()
+            output = list()
+            for i in out:
+                output.append(str(base64.b64encode(i),'ascii'))
+            return json.dumps({"result": output})
+        case 'gcm-poly-powmod':
+            base = CZPoly([base64.b64decode(i) for i in data['base']])
+            exp = data['exponent']
+            mod = CZPoly([base64.b64decode(i) for i in data['modulo']])
+            out = (base.pow(exp,mod)).poly2block()
+            output = list()
+            for i in out:
+                output.append(str(base64.b64encode(i),'ascii'))
+            return json.dumps({"result": output})

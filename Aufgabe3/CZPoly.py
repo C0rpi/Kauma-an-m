@@ -60,9 +60,9 @@ class CZPoly(Poly):
             index = a.coef[len(a.coef)-i].p[-1]-d.coef[-1].p[-1]
             val = a.coef[len(a.coef)-i]/(d.coef[-1])
             out.insert(0,val)
-            for j,v in enumerate(reversed(d.coef[i:])):
+            for j,v in enumerate(d.coef[len(d.coef)-1::-1]):
                 print(Poly(v._lshift(index)))
-                a.coef[len(a.coef)-len(d.coef)-j+1]^=(Poly(v._lshift(index)))
+                a.coef[len(a.coef)-len(d.coef)-j]^=(Poly(v._lshift(index)))
             i += 1
         return out
 

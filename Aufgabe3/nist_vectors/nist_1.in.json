@@ -3,5 +3,11 @@
   "key": "AAAAAAAAAAAAAAAAAAAAAA==",
   "nonce": "AAAAAAAAAAAAAAAA",
   "associated_data": "",
-  "plaintext": ""
+  "plaintext": "",
+  "result":{
+    "ciphertext": "",
+    "auth_tag": "WOL8zvp+MGE2fx1XpOdFWg==",
+    "Y0": "AAAAAAAAAAAAAAAAAAAAAQ==",
+    "H": "ZulL1O+KLDuITPpZyjQrLg=="
+  }
 }

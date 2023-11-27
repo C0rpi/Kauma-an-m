@@ -33,18 +33,22 @@ class Client:
                 data = self.s.recv(256)  
 
                 #find the correct padding in the server response
+                indices = list()
                 for i,v in enumerate(data):
                     if v == 1:
-                        #set the byte value the server found to be acceptable padding
-                        add = int.to_bytes((qbytes[i][j-1]),16,'big')        
+                        indices.append(i)
 
-                        #if first byte, do cross check
-                        if j == 16:
-                            chance = data.find(1)
-                            if not chance == -1: 
-                                add = self.verify_first_bytes(chance, qbytes,add,i)
-                        self.dc = self.dc[:j-1] + bxor(add,pad) + self.dc[j:]
-                        break
+                #set the byte value the server found to be acceptable padding
+                add = int.to_bytes((qbytes[indices[0]][j-1]),1,'big')
+
+                #if first byte, do cross check
+                if j == 16 and len(indices)>1:
+                    chance = indices[1]
+                    add = self.verify_first_bytes(chance, qbytes,add,indices[0])
+                    #if out == b'\x01':
+                    #    add = int.to_bytes((qbytes[indices[1]][j-1]),16,'big')
+
+                self.dc = self.dc[:j-1] + bxor(add,pad) + self.dc[j:]
             ret = bxor(self.iv,self.dc)
             return ret 
         
@@ -62,10 +66,9 @@ class Client:
             self.s.sendall(b'\1\0' + verifier)
             b = self.s.recv(1)
             if not b == b'\1':
-                return int.to_bytes((qbytes[chance][j-1]),1,'big') 
+                return int.to_bytes(chance,1,'big')
             return add
         except ValueError:
-            print(f"add: {add}")
             return add
 
 def bxor(ba : bytes,bb : bytes) -> bytes:

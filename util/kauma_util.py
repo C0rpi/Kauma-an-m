@@ -34,12 +34,7 @@ def json_parser(json_path):
             iv = base64.b64decode(data['iv'])
             ct = base64.b64decode(data['ciphertext'])
             client = Client(hostname,port,ct,iv)
-<<<<<<< HEAD
-            output = base64.b64encode(client.run()).decode('ascii')
-            print(output)
-=======
             output = str(base64.b64encode(client.run()),'ascii')
->>>>>>> dev
             return json.dumps({"plaintext": output})
         
         case 'gcm-encrypt':
@@ -48,12 +43,7 @@ def json_parser(json_path):
             associated_data =  base64.b64decode(data['associated_data'])
             ptb = (base64.b64decode(data['plaintext']))
 
-<<<<<<< HEAD
-            print(len(ptb))
-=======
 
-
->>>>>>> dev
 
             adt = list()
             if not adt == "" or not associated_data == []:

@@ -15,7 +15,12 @@ class CZPoly(Poly):
         self.coef = []
         for i in coef:
             self.coef.append(Poly(i))
-            
+    
+    def binlist(self) -> list:
+        return [i.binlist() for i in self.coef]
+    def binlist_8bit(self) -> list:        
+        return [i.binlist_8bit() for i in self.coef]
+        
     def __add__(self,a):
         return CZPoly(
             [v^self.coef[i] for i,v in enumerate(a.coef)]+ [(self.coef[len(a.coef):])] 
@@ -27,7 +32,7 @@ class CZPoly(Poly):
         out = CZPoly([[] for i in range(len(self.coef) + len(a.coef)-1)])
         for i1,v1 in enumerate(self.coef):
             for i2,v2 in enumerate(a.coef):
-                inserter = v2*v1    
+                inserter = v2*v1
                 out.coef[i1+i2] ^= inserter
         return out
 
@@ -43,15 +48,8 @@ class CZPoly(Poly):
             for i in binlist:
                 p =(p*p)%red
                 if i == 1:
-                    p*=self
-                    p %= red
+                    p=(p*self)%red
         return p
-    
-    def binlist(self) -> list:
-        return [i.binlist() for i in self.coef]
-    def binlist_8bit(self) -> list:        
-        return [i.binlist_8bit() for i in self.coef]
-
 
     def gcd(self,p):
         c, rem = divmod(self,p)
@@ -68,21 +66,34 @@ class CZPoly(Poly):
         
         if len(self.coef)<=len(d.coef): return None, self
         
-        while len(out)<=len(d.coef):
+        while len(out)<len(d.coef):
             res_degree = len(a.coef)-(i-1) - len(d.coef)
+            if res_degree <0:
+                break
+
             res_div = a.coef[len(a.coef)-i]/(d.coef[-1])
             a.coef[len(a.coef)-i]^=res_div*d.coef[-1]
             out.insert(0,res_div)
+
             for j,v in enumerate(d.coef[len(d.coef)-2::-1]):
                 index = res_degree + (len(d.coef)-2)-j
+                print(index)
+                rem_poly = v*res_div
+                print(rem_poly)
                 if index >= 0:
-                    a.coef[index]^=v*res_div
+                    a.coef[index]^=rem_poly
+                else:
+                    breakpoint()
             i += 1
         rem = list()
         for i,v in enumerate(a.coef[::-1]):
             if not v.p == []:
                 rem.append(v)
         return CZPoly(out), CZPoly(rem[::-1])
+    
+    def __truediv__(self, exp):
+        res, mod = divmod(self,exp)
+        return res
 
     def __mod__(self,mod):
         a,b = divmod(self,mod)
@@ -95,11 +106,6 @@ class CZPoly(Poly):
         return self.sqm(exp, mod)
         
         
-        
-        pass
-        
-    
-    
     
     def _to_monic(self):
         red = self.coef[-1]
@@ -107,6 +113,9 @@ class CZPoly(Poly):
         for i in self.coef:
             out.append(i / red)
         return CZPoly(out) 
+    
+    def __eq__(self,a):
+        return self.coef == a.coef 
 
     def __repr__(self):
         return "".join([str(i)+"," for i in self.coef])

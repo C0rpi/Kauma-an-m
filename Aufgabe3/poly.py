@@ -162,6 +162,9 @@ class Poly:
                 out.append(i)
         return Poly(sorted(out))
     
+    def __eq__(self,a):
+        return self.p == a.p
+    
     def __repr__(self) -> str:
         return str(self.p)
     

@@ -139,7 +139,7 @@ def json_parser(json_path):
             base = CZPoly([base64.b64decode(i) for i in data['base']])
             exp = data['exponent']
             mod = CZPoly([base64.b64decode(i) for i in data['modulo']])
-            out = (base.pow(exp,mod)).poly2block()
+            out = (base.powmod(exp,mod)).poly2block()
             output = list()
             for i in out:
                 output.append(str(base64.b64encode(i),'ascii'))

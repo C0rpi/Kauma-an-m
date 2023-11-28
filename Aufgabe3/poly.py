@@ -11,10 +11,11 @@ class Poly:
     orig_length : int #size of original input if e.g. the input has 0-bytes at the end
 
     def __init__(self, inp) -> None:
+        #if type(inp) == Poly:
+        #    self = copy.deepcopy(inp)
         #input can be either list or bytes or int
-        if type(inp) == bytes:
+        if type(inp) == bytes or type(inp) == bytearray:
             val = int.from_bytes(inp,'big')
-            print(len(inp)*8)
             self.p = [i for i in range(len(inp)*8) if (val >> (len(inp)*8-1-i) & 1) == 1]
             self.orig_length = len(inp)*8
             
@@ -64,7 +65,6 @@ class Poly:
         res = list()
         for j in range(8,self.blocksize()+7,8):
             b = 0
-            print(outlist[j-8:j])
             for i,v in enumerate(outlist[j-8:j]):
                 if v ==1:
                     b = b + (1 << ((7-i) % 8))
@@ -164,32 +164,37 @@ class Poly:
         return a
     
     def __xor__(self,a) -> list:
-        b3 = (self.poly2block_long())
-        b4 = (a.poly2block_long())
-        b1 = reverse_bitorder(self.poly2block_long())
-        b2 = reverse_bitorder(a.poly2block_long())
-        i1 = int.from_bytes(b1,'big')
-        i2 = int.from_bytes(b2,'big')
-        #res = bxor(b1,b2)
-        res = Poly(int.to_bytes(i1^i2,(max(len(b1),len(b2))),'big'))
-        out = Poly(sorted(list(set(a.p + self.p)-set(a.p).intersection(self.p))))
-        print("\n",res)
-        print(out)
-        assert out == res
+        #b3 = (self.poly2block_long())
+        #b4 = (a.poly2block_long())
+        #b1 = reverse_bitorder(self.poly2block_long())
+        #b2 = reverse_bitorder(a.poly2block_long())
+        #i1 = int.from_bytes(b1,'little')
+        #i2 = int.from_bytes(b2,'little')
+        #res = Poly(bxor(b1,b2))
+        #out = Poly(reverse_bitorder(int.to_bytes(i1^i2,(max(len(b1),len(b2))),'little')))
+        res = Poly(sorted(list(set(a.p + self.p)-set(a.p).intersection(self.p))))
+        
         return res
     
     def __eq__(self,a):
-        return self.p == a.p
+        if type(self) == Poly and type(a) == Poly:
+            return self.p == a.p
+        else:
+            return False
     
     def __repr__(self) -> str:
         return str(self.p)
-    
+
+
+#not used currently
+  
 def bxor(ba : bytes, bb : bytes):
     if len(ba)>len(bb):
         bb = bb + b'\0'*(len(ba)-len(bb))
     elif len(bb)>len(ba):
         ba = ba + b'\0'*(len(bb)-len(ba))
     return bytes(x ^ y for (x, y) in zip(ba, bb)) 
+
 def reverse_bitorder(b_in):
     out = bytearray()
     for b in bytearray(b_in):

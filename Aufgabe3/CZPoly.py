@@ -55,6 +55,7 @@ class CZPoly(Poly):
                     p*=self
         else:
             for i in binlist:
+                print(i)
                 p =(p*p)%red
                 if i == 1:
                     p=(p*self)%red

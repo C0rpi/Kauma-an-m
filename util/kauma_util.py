@@ -6,6 +6,7 @@ import base64
 from Aufgabe3.aes import AES128GCM
 from Aufgabe3.poly import Poly
 from Aufgabe3.CZPoly import CZPoly
+from Aufgabe3.Cantor import Cantor
 from sys import stderr
 
 #central point which decides what action to perform based on the input
@@ -70,16 +71,6 @@ def json_parser(json_path):
             y0_out = base64.b64encode(y0.poly2block()).decode('ascii')
             h_out = base64.b64encode(h.poly2block()).decode('ascii')
             output = json.dumps({"ciphertext": ct_out, "auth_tag" : at_out, "Y0": y0_out,"H":h_out})
-            return output
-            ##testing
-            with open("Aufgabe3/nist_vectors/nist_4.out.json") as f: validator = json.loads(f.read())
-            res = json.loads(output)
-            for k,v in res.items():
-                try:
-                    assert v == validator[k]
-                except:
-                    stderr.write(f"failed for: {k}")
-                    stderr.write(f"res: {res[k]}\nval: {validator[k]}")
             return output
         
         case 'gcm-block2poly':
@@ -148,8 +139,24 @@ def json_parser(json_path):
             base = CZPoly([base64.b64decode(i) for i in data['base']])
             exp = data['exponent']
             mod = CZPoly([base64.b64decode(i) for i in data['modulo']])
-            out = (base.pow(exp,mod)).poly2block()
+            out = (base.powmod(exp,mod)).poly2block()
             output = list()
             for i in out:
                 output.append(str(base64.b64encode(i),'ascii'))
             return json.dumps({"result": output})
+        
+        case 'gcm-recover':
+            nonce = base64.b64decode(data['nonce'])
+            msg_in = [data['msg1'],data['msg2'],data['msg3'],data['msg4']]
+            ct,ad,at = [],[],[]
+            for i in msg_in:
+                for k,v in i.items():
+                    if k == "ciphertext":
+                        ct.append(base64.b64decode(v))
+                    if k == "associated_data":
+                        ad.append(base64.b64decode(v))
+                    if k == "auth_tag":
+                        at.append(base64.b64decode(v))
+            c = Cantor(nonce,ct,ad,at)
+            out = c.run()
+            

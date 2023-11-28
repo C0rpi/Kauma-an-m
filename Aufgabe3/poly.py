@@ -13,7 +13,7 @@ class Poly:
     def __init__(self, inp) -> None:
         #input can be either list or bytes or int
         if type(inp) == bytes:
-            val = int.from_bytes(inp)
+            val = int.from_bytes(inp,'big')
             self.p = [i for i in range(len(inp)*8) if (val >> (len(inp)*8-1-i) & 1) == 1]
             self.orig_length = len(inp)*8
             

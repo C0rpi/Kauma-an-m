@@ -122,7 +122,8 @@ def json_parser(json_path):
         case 'gcm-poly-mod':
             a = CZPoly([base64.b64decode(i) for i in data['a']])
             b = CZPoly([base64.b64decode(i) for i in data['b']])
-            out = (a%b).poly2block()
+            _, out = divmod(a,b)
+            out = out.poly2block()
             output = list()
             for i in out:
                 output.append(str(base64.b64encode(i),'ascii'))

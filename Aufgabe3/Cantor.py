@@ -43,11 +43,13 @@ class Cantor:
         q = 2**128
         counter = 0
         while True:
-            h = self.rand_poly(len(self.f.coef)-1)
-            g = h.pow((q-1)//3-1,self.f) + CZPoly([[0]])
+            h = self.rand_poly(len(p.coef)-1)
+            g = h.pow((q-1)//3,self.f) + CZPoly([[0]])
             poly_q = p.gcd(g)#idk why, always poly_q == p 🤷 
-            if not poly_q.is_empty() and not poly_q == p._to_monic():
-                return poly_q, p/poly_q
+            if not poly_q.is_empty() and not poly_q == p._to_monic() and not poly_q == CZPoly([[0]]):
+                print(f"g: {g}\n\n")
+                print(f"P: {p}\n\npolyq: {poly_q}\n\n p/q:{(p/poly_q)._to_monic()}")
+                return poly_q, (p/poly_q)._to_monic()
             counter+=1
             if counter >10:
                 return None, None
@@ -68,16 +70,27 @@ class Cantor:
                     k1,k2 = self._round()
             else:
                 for i,v in enumerate(out):
-                    k1,k2 = self._round(v)
-                    if k2 and len(k2) == 2:
-                        res.append(k2)
-                    elif not k2:
+                    if len(v.coef) == 2 and v.coef[1] == Poly([0]):
+                        continue
+                    if not k2:
                         out = list()
                         res = list()
-                    if k1 and len(k1) == 2:
-                        res.append(k1)
-                    out.pop(i)
+                        break
+                    k1,k2 = self._round(v)
+                    out.append(k1)
+                    out.append(k2)
+            for i in out:
+                if not i[1] == Poly([0]):
+                    done = True
+                else:
+                    done = False
                     break
+                    
+                
+            if not out == [] and done:
+                res = out
+                break
+                
         print(f"\nout: {out}\n")
         print(f"res: {res}\n")
 

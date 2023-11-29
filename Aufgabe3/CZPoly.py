@@ -40,7 +40,7 @@ class CZPoly(Poly):
             out = [v^a.coef[i] for i,v in enumerate(self.coef)] + a.coef[len(self.coef):]
         else:
             out = [v^a.coef[i] for i,v in enumerate(self.coef)]
-        return CZPoly(out)
+        return CZPoly(out) #NOTE
           
     def __mul__(self,a):
         out = [[] for i in range(len(self.coef) + len(a.coef)-1)]
@@ -76,43 +76,38 @@ class CZPoly(Poly):
         else:
             r1 = copy.deepcopy(self)
             r0 = copy.deepcopy(p)
+        if r0 == r1:
+            return CZPoly([[]])
+        while not r0.is_empty():
             rnext = r0%r1
-            if rnext == r1:
-                return CZPoly([[0]])
             r1,r0 = r0,rnext
-        if r0.is_empty():
-            return CZPoly([[0]])
-        return r0._to_monic()
+        return r1._to_monic()
     
     def __divmod__(self, d):
+
         a = copy.deepcopy(self)
-        out = list()
-        i = 1
+        out = CZPoly([[]])
         res_degree = 1
         
-        if len(self.coef)<=len(d.coef): return None, self
+        if len(self.coef)<len(d.coef): return None, self
         
-        while len(out)<len(d.coef):
-            res_degree = len(a.coef)-(i-1) - len(d.coef)
-            if res_degree <0:
-                break
+        while res_degree > 0:
+            res_degree = len(a.coef)- len(d.coef)
+            #if res_degree <0:
+            #    break
+            res_div = a.coef[-1]/(d.coef[-1])
+            out.coef.insert(0,res_div)
+            a.coef.pop(-1)
 
-            res_div = a.coef[len(a.coef)-i]/(d.coef[-1])
-            a.coef[len(a.coef)-i]^=res_div*d.coef[-1]
-            out.insert(0,res_div)
-            for j,v in enumerate(d.coef[len(d.coef)-2::-1]):
-                index = res_degree + (len(d.coef)-2)-j
-                rem_poly = v*res_div
-                if index >= 0:
-                    a.coef[index]^=rem_poly
-                else:
-                    breakpoint()
-            i += 1
-        rem = list()
-        for i,v in enumerate(a.coef[::-1]):
-            if not v.p == []:
-                rem.append(v)
-        return CZPoly(out), CZPoly(rem[::-1])
+            prepend_x = CZPoly([[]])
+            for i in range(res_degree):
+                prepend_x.coef.append(Poly([]))
+            prepend_x.coef.append(out.coef[0])
+            xor = (prepend_x)*CZPoly(d.coef[:-1])
+
+            a += (prepend_x)*CZPoly(d.coef[:-1])
+        print(f"out: {out}\n\na: {a}")
+        return out, a
     
     def __truediv__(self, exp):
         res, mod = divmod(self,exp)

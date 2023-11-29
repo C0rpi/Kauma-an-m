@@ -68,7 +68,7 @@ class CZPoly(Poly):
                     p=(p*self)%red
         return p
 
-    #eea basically pseudocode
+    #ea basically pseudocode
     def gcd(self,p):
         if len(self.coef) > len(p.coef):
             r0 = copy.deepcopy(self)
@@ -80,6 +80,10 @@ class CZPoly(Poly):
             return CZPoly([[]])
         while not r0.is_empty():
             rnext = r0%r1
+            s0 = sageme(r0)
+            s1 = sageme(r1)
+            snext = sageme(rnext)
+            print(f"\n\nr0 = {s0}\n\nr1 = {s1}\n\n\rnext = {snext}")
             r1,r0 = r0,rnext
         return r1._to_monic()
     
@@ -87,20 +91,20 @@ class CZPoly(Poly):
         a = copy.deepcopy(self)
         out = list()
         i = 1
-        res_degree = 1
+        res_degree = 0
         
         if len(self.coef)<len(d.coef): return None, self
         
-        while len(out)<len(d.coef):
-            res_degree = len(a.coef)-(i-1) - len(d.coef)
+        while res_degree <= len(self.coef)- len(d.coef):
             if res_degree <0:
                 break
 
             res_div = a.coef[len(a.coef)-i]/(d.coef[-1])
             a.coef[len(a.coef)-i]^=res_div*d.coef[-1]
             out.insert(0,res_div)
-            for j,v in enumerate(d.coef[len(d.coef)-2::-1]):
-                index = res_degree + (len(d.coef)-2)-j
+            res_degree = len(out)
+            for j,v in enumerate(d.coef[:-1]):
+                index = (len(d.coef)-2)-j+(len(self.coef-1)-res_degree)
                 rem_poly = v*res_div
                 if index >= 0:
                     a.coef[index]^=rem_poly
@@ -111,15 +115,42 @@ class CZPoly(Poly):
         for i,v in enumerate(a.coef[::-1]):
             if not v.p == []:
                 rem.append(v)
+        #print(f"rem = {sageme(CZPoly(rem))}")
+        #print(f"out = {sageme(CZPoly(out))}")
+        print(f"self = {sageme((self))}")
+        print(f"d = {sageme((d))}")
         return CZPoly(out), CZPoly(rem[::-1])
+
+    def __mod__(self,divisor):
+        dividend = copy.deepcopy(self)
+        quotient = list()
+        
+        print(f"self = {sageme((self))}")
+        print(f"d = {sageme((divisor))}")
+        
+        for index,div_coef in enumerate((dividend.coef)):
+            inserted_degree = len(dividend.coef)-len(divisor.coef)
+            res_div = dividend.coef[len(dividend.coef)-1-index]/(divisor.coef[-1])
+            quotient.append(res_div)
+            print(divisor.coef[-1])
+            print("\n\n",dividend.coef[len(dividend.coef)-1-index])
+            dividend.coef[-1-index] ^= res_div*divisor.coef[-1]
+                        
+            for divisor_index,divi_coef in enumerate(divisor.coef[:-1]):
+                xor_index = inserted_degree + divisor_index-index
+                if  xor_index > 0 and xor_index <len(dividend.coef)-1:
+                    dividend.coef[xor_index] ^= res_div*divi_coef
+        return dividend
     
+
+
     def __truediv__(self, exp):
         res, mod = divmod(self,exp)
         return res
 
-    def __mod__(self,mod):
-        a,b = divmod(self,mod)
-        return b
+    #def __mod__(self,mod):
+    #    a,b = divmod(self,mod)
+    #    return b
     
     def __pow__(self, exp):
         return self.sqm(exp)
@@ -148,3 +179,12 @@ class CZPoly(Poly):
 
     def __repr__(self):
         return str([str(i)+"," for i in self.coef])
+    
+    
+
+def sageme(inp):
+    l = list()
+    czpoly = inp
+    for index, i in enumerate(czpoly.coef):
+        l.append("("+"".join([f" x^{v} + " for v in i.p]).removesuffix('+ ')+f")*X^{index} + ".removesuffix('+ '))
+    return("+".join(l))

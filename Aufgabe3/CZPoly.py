@@ -76,13 +76,12 @@ class CZPoly(Poly):
         else:
             r1 = copy.deepcopy(self)
             r0 = copy.deepcopy(p)
+        if r0 == r1:
+            return CZPoly([[]])
+        while not r0.is_empty():
             rnext = r0%r1
-            if rnext == r1:
-                return CZPoly([[0]])
             r1,r0 = r0,rnext
-        if r0.is_empty():
-            return CZPoly([[0]])
-        return r0._to_monic()
+        return r1._to_monic()
     
     def __divmod__(self, d):
         a = copy.deepcopy(self)
@@ -90,7 +89,7 @@ class CZPoly(Poly):
         i = 1
         res_degree = 1
         
-        if len(self.coef)<=len(d.coef): return None, self
+        if len(self.coef)<len(d.coef): return None, self
         
         while len(out)<len(d.coef):
             res_degree = len(a.coef)-(i-1) - len(d.coef)

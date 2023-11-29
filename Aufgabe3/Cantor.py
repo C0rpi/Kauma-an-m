@@ -44,9 +44,9 @@ class Cantor:
         counter = 0
         while True:
             h = self.rand_poly(len(self.f.coef)-1)
-            g = h.pow((q-1)//3-1,self.f) + CZPoly([[0]])
+            g = h.pow((q-1)//3,self.f) + CZPoly([[0]])
             poly_q = p.gcd(g)#idk why, always poly_q == p 🤷 
-            if not poly_q.is_empty() and not poly_q == p._to_monic():
+            if not poly_q.is_empty() and not poly_q == p._to_monic() and not poly_q == CZPoly([[0]]):
                 return poly_q, p/poly_q
             counter+=1
             if counter >10:

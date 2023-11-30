@@ -70,26 +70,45 @@ class CZPoly(Poly):
 
     #eea basically pseudocode
     def gcd(self,p):
+
+        #we fast or we wrong?
+        if p == CZPoly([[]]):
+            return self
+
         if len(self.coef) > len(p.coef):
             r0 = copy.deepcopy(self)
             r1 = copy.deepcopy(p)
         else:
             r1 = copy.deepcopy(self)
             r0 = copy.deepcopy(p)
+
+
         if r0 == r1:
-            return CZPoly([[]])
+            return CZPoly([[0]])
         while not r0.is_empty():
             rnext = r0%r1
+            print(f"\nr0 = {sageme(r0)}\nr1 = {sageme(r1)}\nrnext = {sageme(rnext)}\n")
+
+
+
             r1,r0 = r0,rnext
+        if r1 == p:
+            return CZPoly([[0]])
         return r1._to_monic()
     
+    #basically written division
+    #res_degree is the degree of the quotient
+    #the remainder results from writing on the dividend
     def __divmod__(self, d):
 
         a = copy.deepcopy(self)
         out = CZPoly([[]])
         res_degree = 1
+        if d.is_empty():
+            return CZPoly([[]]),self
         
-        if len(self.coef)<len(d.coef): return None, self
+        if len(self.coef)<len(d.coef): 
+            return CZPoly([[]]), self
         
         while res_degree > 0:
             res_degree = len(a.coef)- len(d.coef)
@@ -143,3 +162,12 @@ class CZPoly(Poly):
 
     def __repr__(self):
         return str([str(i)+"," for i in self.coef])
+    
+def sageme(inp):
+    l = list()
+    czpoly = inp
+    for index, i in enumerate(czpoly.coef):
+        if i.p == []:
+            continue
+        l.append("("+"".join([f" x^{v} + " for v in i.p]).removesuffix('+ ')+f")*X^{index} + ".removesuffix('+ '))
+    return("+".join(l))

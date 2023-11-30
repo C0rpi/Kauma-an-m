@@ -106,7 +106,6 @@ class CZPoly(Poly):
             xor = (prepend_x)*CZPoly(d.coef[:-1])
 
             a += (prepend_x)*CZPoly(d.coef[:-1])
-        print(f"out: {out}\n\na: {a}")
         return out, a
     
     def __truediv__(self, exp):

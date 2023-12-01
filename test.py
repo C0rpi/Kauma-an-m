@@ -10,11 +10,15 @@ a = CZPoly([Poly(base64.b64decode("ukJiJigw0LA1N7HpPtxNZw==")),Poly([0])])
 b = CZPoly([Poly(base64.b64decode("lDhGiu/iEZE1j48bvp8iUQ==")),Poly([0])])
 c = CZPoly([Poly(base64.b64decode("uDtTNwi/U10KpuUpgNU7eA==")),Poly([0])])
 d = CZPoly([Poly(base64.b64decode("8ivENuXNQR0IIJdbxXtU2w==")),Poly([0])])
+mask = "MkcYSzxPaaRNvNIoh7u0GA=="
+tag = "nJ74K5iQJh6e06K/VENJZw=="
+res = "rtngYKTfT7rTb3CX0/j9fw=="
 #mask = "A9CpvhiK44fKXY+zTCp6BQ=="
 #tag = "uU5qgpx37Yrs4yFs1Z3LgA=="
-#mask = CZPoly([Poly(base64.b64decode(mask)),Poly([0])])
-#tag = CZPoly([Poly(base64.b64decode(tag)),Poly([0])])
-#print(f"mask: {mask}\n\ntag: {tag}")
+mask = CZPoly([Poly(base64.b64decode(mask)),Poly([0])])
+tag = CZPoly([Poly(base64.b64decode(tag)),Poly([0])])
+res = CZPoly([Poly(base64.b64decode(res)),Poly([0])])
+print(f"mask: {mask}\n\ntag: {tag}\n\nres: {res}")
 print(a)
 print(b)
 print(c)

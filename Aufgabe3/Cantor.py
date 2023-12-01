@@ -66,7 +66,7 @@ class Cantor:
                 return poly_q, pdq._to_monic()
             print(counter)
             counter+=1
-            if counter >10:
+            if counter >15:
                 return None, None
             
     def get_candidates(self):
@@ -96,13 +96,17 @@ class Cantor:
         return res
     
     def _get_ek(self, candidate):
-        l = self.gen_l()        
+        if candidate == Poly([0, 2, 3, 4, 10, 11, 12, 14, 15, 17, 19, 22, 23, 26, 27, 29, 30, 31, 36, 40, 42, 43, 44, 45, 46, 47, 49, 51, 54, 55, 57, 59, 60, 61, 63, 68, 70, 72, 74, 77, 78, 80, 81, 82, 85, 87, 90, 92, 95, 96, 104, 105, 107, 109, 111, 114, 115, 116, 118, 119, 121, 122, 123, 124]):
+            breakpoint()
+        l = self.gen_l()
         p = Poly([])
-        for i,v in enumerate(self.ct[2]):
+        current_ct = copy.deepcopy(self.ct)
+        current_ct.append(self.ad[2])
+        for i,v in enumerate(current_ct[2]):
             p^= v*(candidate.pow(i+2))
         p^=l*candidate
         p^= self.at[2]
-        ek = self.at[2]^(candidate^l)
+        ek = self.at[2]^p
         return ek
 
     
@@ -124,13 +128,12 @@ class Cantor:
 
     def check_candidates(self,candidates):     
         for i,candidate in enumerate(candidates):
-            print(base64.b64decode("MkcYSzxPaaRNvNIoh7u0GA=="))
-            print(base64.b64decode("nJ74K5iQJh6e06K/VENJZw=="))
+            print(Poly(base64.b64decode("MkcYSzxPaaRNvNIoh7u0GA==")))
+            print(Poly(base64.b64decode("nJ74K5iQJh6e06K/VENJZw==")))
             ek = self._get_ek(candidate.coef[0])   
-            at_try = self.try_authenticate(candidate.coef[0],ek)
-            if at_try == self.at[2]:
-                at4 = self.try_authenticate(candidate.coef[0],ek)
-                return at4
+            at4 = self.try_authenticate(candidate.coef[0],ek)
+            print(f"\ncandidate: {candidate}\n\nat4: {at4}\n\nek: {ek}\n")
+        return candidate, at4
             
 
 

@@ -38,6 +38,8 @@ print(d)
 #
 #
 
+print(f"\n\nat: {base64.b64encode(Poly([1, 3, 8, 11, 12, 19, 22, 23, 24, 25, 28, 31, 32, 33, 36, 37, 39, 40, 41, 43, 44, 45, 46, 49, 55, 57, 58, 59, 60, 61, 65, 66, 67, 69, 70, 71, 74, 76, 77, 81, 83, 85, 86, 87, 89, 90, 92, 100, 103, 108, 110, 112, 114, 115, 117, 118, 119, 121, 124, 127]).poly2block())}")
+
 file = "Aufgabe3/test/gcmrecover.json"
 with open(file) as f: inp = json.loads(f.read())['result']
 out = json_parser(file)

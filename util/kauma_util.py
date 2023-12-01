@@ -147,8 +147,6 @@ def json_parser(json_path):
             return json.dumps({"result": output})
         
         case 'gcm-recover':
-            print("you shall not pass, this doesnt work yet anyways!")
-            #break
             nonce = base64.b64decode(data['nonce'])
             msg_in = [data['msg1'],data['msg2'],data['msg3'],data['msg4']]
             ct,ad,at = [],[],[]
@@ -162,4 +160,7 @@ def json_parser(json_path):
                         at.append(base64.b64decode(v))
             c = Cantor(nonce,ct,ad,at)
             out = c.run()
+            output = (str(base64.b64encode(out.poly2block()),'ascii'))
+            return json.dumps({"result": {"msg4_tag": output}})
+            
             

@@ -87,7 +87,7 @@ class CZPoly(Poly):
             return CZPoly([[0]])
         while not r0.is_empty():
             rnext = r0%r1
-            print(f"\nr0 = {sageme(r0)}\nr1 = {sageme(r1)}\nrnext = {sageme(rnext)}\n")
+            #print(f"\nr0 = {sageme(r0)}\nr1 = {sageme(r1)}\nrnext = {sageme(rnext)}\n")
 
 
 

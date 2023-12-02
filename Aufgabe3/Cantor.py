@@ -32,19 +32,15 @@ class Cantor:
 
 
     def _round(self, p = None):
-        for i in self.ct:
-            pass
         if not p:
             #l = Poly(sum([i.orig_length for i in self.ad[0]]).to_bytes(8,'big') + sum([i.orig_length for i in self.ct[0]]).to_bytes(8,'big'))
             p = list()
             for i,v in enumerate(self.ct[0]):
-                p.insert(0,v^self.ct[1][i])#NOTE order reversed?
+                p.insert(0,v^self.ct[1][i])
             p.insert(0,Poly([]))
             p.insert(0,self.at[0]^self.at[1])
             p = CZPoly(p)._to_monic()
             self.f = copy.deepcopy(p)
-            for i in self.f.coef:
-                print(base64.b64encode(i.poly2block()))
             
         q = 2**128
         counter = 1
@@ -60,11 +56,9 @@ class Cantor:
 
             
             if p == pdq*poly_q and not poly_q == p and not poly_q == CZPoly([[0]]) :
-                print(pdq._to_monic())
                 assert p == pdq*poly_q
                 assert p == pdq*poly_q._to_monic()
                 return poly_q, pdq._to_monic()
-            print(counter)
             counter+=1
             if counter >15:
                 return None, None
@@ -88,35 +82,38 @@ class Cantor:
             out[i] = None
             out.append(k1)
             out.append(k2)   
-        print(out)
         for i in out:
             if i and i.coef[1]== Poly([0]) and len(i.coef)==2:
                 res.append(i)
-        print(f"\n\nres: {res}\n\n")
         return res
     
-    def _get_ek(self, candidate):
-        if candidate == Poly([0, 2, 3, 4, 10, 11, 12, 14, 15, 17, 19, 22, 23, 26, 27, 29, 30, 31, 36, 40, 42, 43, 44, 45, 46, 47, 49, 51, 54, 55, 57, 59, 60, 61, 63, 68, 70, 72, 74, 77, 78, 80, 81, 82, 85, 87, 90, 92, 95, 96, 104, 105, 107, 109, 111, 114, 115, 116, 118, 119, 121, 122, 123, 124]):
-            breakpoint()
-        l = self.gen_l()
-        p = Poly([])
-        current_ct = copy.deepcopy(self.ct)
-        current_ct.append(self.ad[2])
-        for i,v in enumerate(current_ct[2]):
-            p^= v*(candidate.pow(i+2))
-        p^=l*candidate
-        p^= self.at[2]
-        ek = self.at[2]^p
-        return ek
+    def _get_ek(self, candidates):
+        for i in candidates:
+            candidate = i.coef[0]
+            l = self.gen_l()
+            ek = Poly([])
+            current_ct = copy.deepcopy(self.ct[0][::-1])
+            for i in self.ad[0][::-1]:
+                current_ct.append(i)
+            for i,v in enumerate(current_ct):
+                ek^= v*(candidate.pow(i+2))
+            ek^=l*candidate
+            ek^= self.at[0]
+            at = self.try_authenticate(candidate,ek,2)
+            if at == self.at[2]:
+                return candidate, ek
+        return None
 
     
-    def try_authenticate(self,h,ek):
-        at = self._ghash(self.ad[3],self.ct[3],h,ek)
+    def try_authenticate(self,h,ek,index):
+        at = self._ghash(self.ad[index],self.ct[index],h,ek)
         return at
 
-    def _ghash(self,ad,cts,h,ek):
+    def _ghash(self,ad,ctlist,h,ek):
+        cts = copy.deepcopy(ctlist)
         acc = Poly([])    
         l = self.gen_l()
+        cts.append(l)
         for i in reversed(ad):
             cts.insert(0,i)
         for ct in cts:
@@ -126,34 +123,20 @@ class Cantor:
     def gen_l(self):
         return Poly(sum([i.orig_length for i in self.ad[0]]).to_bytes(8,'big') + sum([i.orig_length for i in self.ct[0]]).to_bytes(8,'big'))
 
-    def check_candidates(self,candidates):     
-        for i,candidate in enumerate(candidates):
-            print(Poly(base64.b64decode("MkcYSzxPaaRNvNIoh7u0GA==")))
-            print(Poly(base64.b64decode("nJ74K5iQJh6e06K/VENJZw==")))
-            ek = self._get_ek(candidate.coef[0])   
-            at4 = self.try_authenticate(candidate.coef[0],ek)
-            print(f"\ncandidate: {candidate}\n\nat4: {at4}\n\nek: {ek}\n")
-        return candidate, at4
+    def check_candidates(self,candidates):
+        h, ek = self._get_ek(candidates)   
+        at4 = self.try_authenticate(h,ek,3)
+        return at4
             
 
 
     def run(self):
         #c : list
         c = self.get_candidates()
-        #c = [CZPoly([[0, 2, 3, 4, 6, 9, 14, 17, 18, 22, 26, 29, 30, 34, 36, 42, 43, 48, 49, 51, 56, 58, 59, 66, 67, 69, 71, 74, 75, 77, 78, 79, 80, 82, 83, 87, 88, 89, 90, 92, 95, 98, 99, 100, 101, 102, 104, 105, 107, 108, 109, 113, 116, 117, 119, 121, 122, 125, 126, 127], [0]]), CZPoly([[2, 3, 4, 5, 6, 8, 10, 11, 12, 13, 16, 17, 18, 22, 23, 27, 28, 29, 30, 31, 32, 37, 40, 41, 45, 47, 49, 50, 55, 56, 57, 59, 67, 68, 74, 75, 78, 80, 86, 89, 90, 92, 93, 94, 97, 98, 99, 100, 101, 104, 105, 106, 107, 108, 109, 110, 111, 113, 116, 118, 120, 122, 123, 124], [0]]), CZPoly([[0, 5, 11, 14, 17, 18, 19, 20, 22, 24, 27, 28, 30, 31, 32, 33, 35, 36, 37, 41, 43, 44, 45, 47, 48, 49, 51, 53, 54, 58, 60, 64, 65, 67, 69, 70, 74, 75, 76, 77, 79, 80, 81, 85, 86, 89, 92, 93, 97, 99, 100, 102, 104, 109, 111, 116, 117, 118, 119, 123, 124, 125, 126, 127], [0]]), CZPoly([[1, 2, 5, 8, 13, 14, 17, 20, 28, 29, 30, 31, 33, 35, 36, 38, 44, 48, 50, 51, 53, 58, 60, 63, 64, 65, 66, 67, 68, 71, 77, 78, 80, 82, 83, 84, 87, 89, 92, 94, 95, 96, 97, 99, 100, 101, 103, 105, 108, 110, 111, 116, 121, 123, 125, 127], [0]])]
-        for i in c:
-            print(i.coef[0])
-        #index 0 is the right result (should be, its the only factor thats reoccuring)
         res = c[0]
         for i in c[1:]:
             res*=i
-        print(res)
-        
-        print('\n\n\n\n\n\n')
-        print(c)
-        print('\n\n\n\n\n\n')
-        h, ek = self.check_candidates(c)
-        at = self.authenticate(h,ek)
+        at = self.check_candidates(c)
         return at
 
 

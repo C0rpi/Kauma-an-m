@@ -72,19 +72,18 @@ def json_parser(json_path):
             h_out = base64.b64encode(h.poly2block()).decode('ascii')
             output = json.dumps({"ciphertext": ct_out, "auth_tag" : at_out, "Y0": y0_out,"H":h_out})
             return output
-        
         case 'gcm-block2poly':
-            b = data['block']
+            b = base64.b64decode(data['block'])
             output = Poly(b)
-            return json.dumps({"exponents": output})
+            return json.dumps({"exponents": output.p})
         case 'gcm-poly2block':
             e = data['exponents']
-            output = base64.b64encode(Poly(e).poly2block())
+            output = str(base64.b64encode(Poly(e).poly2block()),'ascii')
             return json.dumps({"block": output})
         case 'gcm-clmul':
             a = Poly(base64.b64decode(data['a']))
             b = Poly(base64.b64decode(data['b']))
-            output = base64.b64encode((a*b).poly2block())
+            output = str(base64.b64encode((a*b).poly2block()),'ascii')
             return json.dumps({"a_times_b": output})
         
         case 'gcm-poly-add':

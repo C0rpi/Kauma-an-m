@@ -136,9 +136,13 @@ class CZPoly(Poly):
         return b
     
     def __pow__(self, exp):
+        if exp == 0:
+            return CZPoly([[0]])
         return self.sqm(exp)
     
     def powmod(self, exp : int, mod):
+        if exp == 0:
+            return CZPoly([[0]])
         return self.sqm(exp, mod)
         
     def is_empty(self):

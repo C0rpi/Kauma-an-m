@@ -135,22 +135,24 @@ class Poly:
             return Poly(self.p + a.p)
 
     def pow(self,a,mod = None):
+        if a ==0:
+            return Poly([0])
         return self.sqm(a,mod)
 
-    def sqm(self,exp,red = None): #no reduce needed because the multiply reduces for every step anyhow, not quite the most performant way, but works none the less
+    def sqm(self,exp,red = None): 
         if not red:
             red = Poly([0,1,2,7,128]) #fix
         p = self
-        binlist = Poly(exp).binlist()[-2::-1]#automatically cuts the first one, bc that inherently represented in the algorithm
+        binlist = Poly(exp).binlist()[-2::-1]#automatically cuts the first one, bc that's inherently represented in the algorithm
         for i in binlist:
             p *=p%red
             if i == 1:
                 p*=self%red
         return p
-    def __truediv__(self,exp):
-        if self == exp:
+    def __truediv__(self,div):
+        if self == div:
             return Poly([0])
-        mul =  exp.pow(2**128-2) #this is soooooo slow
+        mul =  div.pow(2**128-2) #this is soooooo slow
         return self * mul
 
     def __mod__(self,red):

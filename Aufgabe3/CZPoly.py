@@ -122,9 +122,10 @@ class CZPoly(Poly):
             for i in range(res_degree):
                 prepend_x.coef.append(Poly([]))
             prepend_x.coef.append(out.coef[0])
-            xor = (prepend_x)*CZPoly(d.coef[:-1])
 
             a += (prepend_x)*CZPoly(d.coef[:-1])
+            if a.is_empty():
+                break
         return out, a
     
     def __truediv__(self, exp):

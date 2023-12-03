@@ -89,10 +89,13 @@ def json_parser(json_path):
         case 'gcm-poly-add':
             a = CZPoly([base64.b64decode(i) for i in data['a']])
             b = CZPoly([base64.b64decode(i) for i in data['b']])
-            out = (a+b).poly2block()
-            output = list()
-            for i in out:
-                output.append(str(base64.b64encode(i),'ascii'))
+            out = a+b
+            if out.is_empty():
+                output = []
+            else:
+                output = list()
+                for i in out.coef:
+                    output.append(str(base64.b64encode(i.poly2block()),'ascii'))
             return str(json.dumps({"result": output}))
         case 'gcm-poly-mul':
             a = CZPoly([base64.b64decode(i) for i in data['a']])

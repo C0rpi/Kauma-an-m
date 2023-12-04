@@ -19,5 +19,7 @@
     "msg4": {
         "ciphertext": "AzG3BPw+c9MbmrBTPBk7xQ==",
         "associated_data": "EKl8"
+    },"result":{
+        "msg4_tag": "GlBd2t2Ez4jqccG3vA+09Q=="
     }
 }

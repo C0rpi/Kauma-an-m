@@ -41,6 +41,9 @@ class CZPoly(Poly):
         else:
             out = [v^a.coef[i] for i,v in enumerate(self.coef)]
         return CZPoly(out) #NOTE
+    
+    def __xor__(self, a) -> list:
+        return self + a
           
     def __mul__(self,a):
         out = [[] for i in range(len(self.coef) + len(a.coef)-1)]
@@ -71,7 +74,6 @@ class CZPoly(Poly):
     #eea basically pseudocode
     def gcd(self,p):
 
-        #we fast or we wrong?
         if p == CZPoly([[]]):
             return self
 
@@ -82,18 +84,12 @@ class CZPoly(Poly):
             r1 = copy.deepcopy(self)
             r0 = copy.deepcopy(p)
 
-
         if r0 == r1:
-            return CZPoly([[0]])
+            return r0
         while not r0.is_empty():
             rnext = r0%r1
-            #print(f"\nr0 = {sageme(r0)}\nr1 = {sageme(r1)}\nrnext = {sageme(rnext)}\n")
+            r1,r0 = rnext,r1
 
-
-
-            r1,r0 = r0,rnext
-        if r1 == p:
-            return CZPoly([[0]])
         return r1._to_monic()
     
     #basically written division
@@ -109,8 +105,34 @@ class CZPoly(Poly):
         
         if len(self.coef)<len(d.coef): 
             return CZPoly([[]]), self
-        
+        final_degree = len(self.coef)- len(d.coef)
+
+        #if len(d.coef) == 1:
+        #    res_degree = len(a.coef)- len(d.coef)
+        #    #if res_degree <0:
+        #    #    break
+        #    res_div = a.coef[-1]/(d.coef[-1])
+        #    out.coef.insert(0,res_div)
+        #    a.coef.pop(-1)
+#
+        #    prepend_x = CZPoly([[]])
+        #    for i in range(res_degree):
+        #        prepend_x.coef.append(Poly([]))
+        #    prepend_x.coef.append(out.coef[0])
+        #    xor = (prepend_x)*CZPoly(d.coef[:-1])
+#
+        #    a += (prepend_x)*CZPoly(d.coef[:-1])
+#
+        #    for i in range(len(self.coef)- len(d.coef)-len(out.coef)):
+        #        out.coef.insert(0,Poly([]))
+#
+        #    return out,a
+
         while res_degree > 0:
+            if a.is_empty():
+                for i in range(len(self.coef)- len(d.coef)-len(out.coef)+1):
+                    out.coef.insert(0,Poly([]))
+                    return out,a
             res_degree = len(a.coef)- len(d.coef)
             #if res_degree <0:
             #    break
@@ -125,6 +147,11 @@ class CZPoly(Poly):
             xor = (prepend_x)*CZPoly(d.coef[:-1])
 
             a += (prepend_x)*CZPoly(d.coef[:-1])
+
+        #pad if output doesnt match size that it should be
+        if a.is_empty():
+            for i in range(len(self.coef)- len(d.coef)-len(out.coef)+1):
+                out.coef.insert(0,Poly([]))
         return out, a
     
     def __truediv__(self, exp):

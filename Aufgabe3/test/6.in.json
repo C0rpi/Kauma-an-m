@@ -19,5 +19,7 @@
     "msg4": {
         "ciphertext": "fuQsqR9arjYko4Mdf2gNK83fE54AJaxeflCh",
         "associated_data": "6KHgBA=="
+    },"result":{
+        "msg4_tag": "o6r0L817iBmEgCNmxL+l4w=="
     }
 }

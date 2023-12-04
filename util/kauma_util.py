@@ -160,6 +160,6 @@ def json_parser(json_path):
             c = Cantor(nonce,ct,ad,at)
             out = c.run()
             output = (str(base64.b64encode(out.poly2block()),'ascii'))
-            return json.dumps({"result": {"msg4_tag": output}})
+            return json.dumps({"msg4_tag": output})
             
             

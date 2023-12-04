@@ -56,26 +56,14 @@ class Cantor:
             p = CZPoly(b1)^CZPoly(b2)
             
             self.f = copy.deepcopy(p)._to_monic()
-            for i in self.ct[0]:
-                print(base64.b64encode(i.poly2block()))
-            print()
-            for i in self.ct[1]:
-                print(base64.b64encode(i.poly2block()))
-            print()
-            for i in p.coef:
-                print(base64.b64encode(i.poly2block()))
+            
             
         q = 2**128
         counter = 1
         while True:
             h = self.rand_poly(len(p.coef)-1)
-            print(h)
             #h =
             g = h.pow((q-1)//3,self.f) + CZPoly([[0]])
-            print(p)
-            print()
-            print(g)
-            print()
             poly_q = p.gcd(g)
             
             if not poly_q == p and not poly_q == CZPoly([[0]]) :
@@ -114,8 +102,6 @@ class Cantor:
     
     def _get_ek(self, candidates):
         for i in candidates:
-            print(base64.b64encode(i.coef[0].poly2block()))
-        for i in candidates:
             candidate = i.coef[0]
             l = self.gen_l(0)
             ek = Poly([])
@@ -126,7 +112,6 @@ class Cantor:
                 ek^= v*(candidate.pow(i+2))
             ek^=l*candidate
             ek^= self.at[0]
-            print(base64.b64encode(ek.poly2block()))
             at = self.try_authenticate(candidate,ek,2)
             if at == self.at[2]:
                 return candidate, ek

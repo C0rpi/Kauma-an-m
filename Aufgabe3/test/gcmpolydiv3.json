@@ -1,0 +1,15 @@
+{
+    "a": [
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "gAAAAAAAAAAAAAAAAAAAAA=="
+    ],
+    "action": "gcm-poly-div",
+    "b": [
+        "CdVexJmeMSi0OjQz2hbcCQ=="
+    ],"result": [
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "1zZJrUiEjyjIrsVpZxcRtQ=="
+    ]
+}

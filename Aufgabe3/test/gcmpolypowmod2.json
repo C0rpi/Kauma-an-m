@@ -1,0 +1,16 @@
+{
+"action": "gcm-poly-powmod",
+"base": [
+    "AAAAAAAAAAAAAAAAAAAAAA==",
+    "gAAAAAAAAAAAAAAAAAAAAA=="
+],
+"exponent": 95007201,
+"modulo": [
+    "zAUFu6FJhS9XvMz6EFeY/g==",
+    "bo+S316xv+REyiJHi2nuFA==",
+    "tNv9s1pliPqeAkeBqaqGcA=="
+],"result": [
+    "o7rQuhTVMz7EDAGUHeOF/Q==",
+    "pKl2rF56H8pALwGpxLleYA=="
+]
+}

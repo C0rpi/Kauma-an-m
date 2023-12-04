@@ -4,8 +4,12 @@
         "AAAAAAAAAAAAAAAAAAAAAA==",
         "gAAAAAAAAAAAAAAAAAAAAA=="
     ],
-    "action": "gcm-poly-mod",
+    "action": "gcm-poly-div",
     "b": [
         "CdVexJmeMSi0OjQz2hbcCQ=="
-    ],"result":[]
+    ],"result": [
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "1zZJrUiEjyjIrsVpZxcRtQ=="
+    ]
 }

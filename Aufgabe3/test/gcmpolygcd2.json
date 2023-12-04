@@ -1,0 +1,13 @@
+{
+    "a": [
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "gAAAAAAAAAAAAAAAAAAAAA=="
+    ],
+    "action": "gcm-poly-gcd",
+    "b": [
+        "gAAAAAAAAAAAAAAAAAAAAA=="
+    ],
+    "result": [
+        "gAAAAAAAAAAAAAAAAAAAAA=="
+    ]
+}
